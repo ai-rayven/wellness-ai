@@ -21,11 +21,6 @@
       </div>
       <div class="avatar" aria-hidden="true">R</div>
     </div>
-    <div class="switcher" role="tablist" aria-label="Dashboard design">
-      <button role="tab" data-design="a">A · Rings</button>
-      <button role="tab" data-design="b">B · Stack</button>
-      <button role="tab" data-design="c">C · Coach</button>
-    </div>
   </header>
 
   <main id="app"></main>
@@ -33,13 +28,17 @@
   <nav class="tabbar" aria-label="Main">
     <a class="on" href="#"><span>◉</span>Today</a>
     <a href="#"><span>🍲</span>Recipes</a>
+    <button class="fab" data-coach aria-label="Open AI coach"><i>✦</i>Coach</button>
     <a href="#"><span>🛒</span>Pantry</a>
-    <a href="#"><span>💬</span>Coach</a>
+    <a href="#"><span>📈</span>Progress</a>
   </nav>
+
+  <div id="coach" class="coach-layer" role="dialog" aria-label="AI coach" hidden></div>
 
   <div id="tip" class="tip" role="status" hidden></div>
 
   <script src="app.js"></script>
+  <script src="coach.js"></script>
   <script>
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
   </script>

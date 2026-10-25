@@ -1,4 +1,4 @@
-// Mock data + three dashboard designs. No build step: plain JS rendering into #app.
+// Mock data + the Coach dashboard. No build step: plain JS rendering into #app.
 
 // ---------- Mock data ----------
 let seed = 7;
@@ -43,7 +43,6 @@ for (let d = new Date(start); d <= today; d = new Date(+d + dayMs)) {
 habit[habit.length - 1].meals = 3;
 let streak = 0;
 for (let i = habit.length - 1; i >= 0 && habit[i].meals > 0; i--) streak++;
-const daysLogged = habit.filter((h) => h.meals > 0).length;
 
 const meals = [
   { icon: '🥣', name: 'Greek yogurt & berry bowl', kcal: 410, p: 38, done: true },
@@ -77,17 +76,6 @@ function ring(value, max, size, stroke, color, inner = '') {
       stroke-linecap="round" stroke-dasharray="${c * frac} ${c}" transform="rotate(-90 ${size / 2} ${size / 2})"/>
     ${inner}
   </svg>`;
-}
-
-function macroBars() {
-  return MACROS.map((m) => `
-    <div class="macro">
-      <div class="macro-top">
-        <span><span class="dot" style="background:${m.color}"></span><b>${m.label}</b></span>
-        <span class="num"><b>${eaten[m.key]}</b><span class="muted"> / ${targets[m.key]} g</span></span>
-      </div>
-      <div class="track"><div class="fill" style="width:${pct(eaten[m.key], targets[m.key])}%;background:${m.color}"></div></div>
-    </div>`).join('');
 }
 
 function weightChart(id, height = 150) {
@@ -172,102 +160,18 @@ function bindHeatmap(id) {
   svg.addEventListener('pointerleave', (e) => e.pointerType === 'mouse' && hideTip());
 }
 
-const weightStat = () => `
-  <div class="row" style="justify-content:space-between;margin-bottom:8px">
-    <div><div class="big num">${latest.trend}<span class="muted" style="font-size:16px"> lb</span></div><div class="muted small">Trend weight</div></div>
-    <div style="text-align:right"><div class="num" style="font-weight:700;font-size:18px">${weekChange} lb</div><div class="muted small">this week</div></div>
-  </div>`;
-
-// ---------- Design A: Rings (MacroFactor-like) ----------
-function designA() {
-  const left = targets.kcal - eaten.kcal;
-  return `
-  <section class="card">
-    <div class="card-h"><h2>Calories</h2><span class="sub">Goal: lose fat</span></div>
-    <div class="row" style="gap:18px">
-      ${ring(eaten.kcal, targets.kcal, 128, 12, 'var(--accent)',
-        `<text x="64" y="62" text-anchor="middle" font-size="26" font-weight="700" fill="var(--text)">${left}</text>
-         <text x="64" y="80" text-anchor="middle" font-size="11" fill="var(--text-2)">kcal left</text>`)}
-      <div style="flex:1;display:grid;gap:8px">
-        <div><div class="muted small">Eaten</div><div class="num" style="font-weight:700;font-size:20px">${eaten.kcal}</div></div>
-        <div><div class="muted small">Target</div><div class="num" style="font-weight:700;font-size:20px">${targets.kcal}</div></div>
-      </div>
-    </div>
-    ${macroBars()}
-  </section>
-
-  <section class="card">
-    <div class="card-h"><h2>Scale weight</h2><span class="sub">30 days</span></div>
-    ${weightStat()}
-    ${weightChart('wA')}
-  </section>
-
-  <section class="card">
-    <div class="card-h"><h2>Consistency</h2><span class="sub">🔥 ${streak}-day streak</span></div>
-    ${heatmap('hA')}
-  </section>`;
-}
-
-// ---------- Design B: Stack (one stacked calorie bar, tiles, compact) ----------
-function designB() {
-  const kcalOf = { protein: eaten.protein * 4, carbs: eaten.carbs * 4, fat: eaten.fat * 9 };
-  const left = targets.kcal - eaten.kcal;
-  return `
-  <section class="card">
-    <div class="card-h"><h2>Today</h2><span class="sub">${pct(eaten.kcal, targets.kcal)}% of target</span></div>
-    <div class="row" style="justify-content:space-between;align-items:flex-end;margin-bottom:12px">
-      <div><span class="big num">${eaten.kcal}</span><span class="muted"> / ${targets.kcal} kcal</span></div>
-      <div class="muted small num">${left} left</div>
-    </div>
-    <div class="stack" role="img" aria-label="Calories by macro">
-      ${MACROS.map((m) => `<div style="width:${(kcalOf[m.key] / targets.kcal) * 100}%;background:${m.color}"></div>`).join('')}
-    </div>
-    <div class="legend">${MACROS.map((m) => `<span><span class="dot" style="background:${m.color}"></span>${m.label} ${kcalOf[m.key]} kcal</span>`).join('')}</div>
-    <div class="grid3" style="margin-top:14px">
-      ${MACROS.map((m) => `
-        <div class="tile">
-          <div class="k"><span class="dot" style="background:${m.color}"></span>${m.label}</div>
-          <div class="v num">${eaten[m.key]}<span class="muted" style="font-size:13px;font-weight:500">g</span></div>
-          <div class="muted small num">${targets[m.key] - eaten[m.key]}g left</div>
-        </div>`).join('')}
-    </div>
-  </section>
-
-  <div class="grid2">
-    <section class="card">
-      <div class="muted small">Trend weight</div>
-      <div class="num" style="font-size:24px;font-weight:700">${latest.trend}<span class="muted" style="font-size:13px"> lb</span></div>
-      <div class="small num" style="color:var(--accent);font-weight:600">${weekChange} lb / wk</div>
-    </section>
-    <section class="card">
-      <div class="muted small">Streak</div>
-      <div class="num" style="font-size:24px;font-weight:700">${streak}<span class="muted" style="font-size:13px"> days</span></div>
-      <div class="small muted num">${daysLogged} days logged</div>
-    </section>
-  </div>
-
-  <section class="card">
-    <div class="card-h"><h2>Weight</h2><span class="sub">Scale ${latest.scale} lb today</span></div>
-    ${weightChart('wB', 130)}
-  </section>
-
-  <section class="card">
-    <div class="card-h"><h2>Tracking history</h2><span class="sub">${WEEKS} weeks</span></div>
-    ${heatmap('hB')}
-  </section>`;
-}
-
-// ---------- Design C: Coach (AI coach + recipes first) ----------
-function designC() {
+// ---------- Dashboard ----------
+function dashboard() {
   const proteinLeft = targets.protein - eaten.protein;
   const days = habit.slice(-7);
   return `
   <section class="card coach">
-    <div class="who"><i>AI</i>Your coach</div>
+    <div class="who"><i>✦</i>Your coach</div>
     <p>You're <b>${proteinLeft}g short on protein</b> today. Tonight's miso salmon bowl covers most of it — you're on pace for <b>${Math.abs(weekChange)} lb/week</b>, right on goal.</p>
     <div class="chips">
-      <span class="chip">Swap dinner</span><span class="chip">High-protein snack</span><span class="chip">Use what's in my pantry</span>
+      ${['Swap dinner', 'High-protein snack', 'Cook from my pantry'].map((q) => `<button class="chip" data-ask="${q}">${q}</button>`).join('')}
     </div>
+    <button class="ask-fake" data-ask="">Ask your coach or log a meal…</button>
   </section>
 
   <section class="card">
@@ -306,25 +210,13 @@ function designC() {
   </section>`;
 }
 
-// ---------- Switcher ----------
-const designs = { a: designA, b: designB, c: designC };
 const app = document.getElementById('app');
-const tabs = document.querySelectorAll('.switcher button');
-
-function render(key) {
-  if (!designs[key]) key = 'a';
+function renderDashboard() {
   hideTip();
-  app.innerHTML = designs[key]();
-  tabs.forEach((t) => t.setAttribute('aria-selected', t.dataset.design === key));
-  for (const s of ['A', 'B', 'C']) { bindWeightChart('w' + s); bindHeatmap('h' + s); }
-  if (location.hash !== '#' + key) history.replaceState(null, '', '#' + key);
-  try { localStorage.setItem('design', key); } catch {}
+  app.innerHTML = dashboard();
+  bindWeightChart('wC');
+  bindHeatmap('hC');
 }
 
-tabs.forEach((t) => t.addEventListener('click', () => { render(t.dataset.design); scrollTo({ top: 0 }); }));
-addEventListener('hashchange', () => render(location.hash.slice(1)));
-
 document.getElementById('today').textContent = today.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
-let initial = location.hash.slice(1);
-if (!designs[initial]) { try { initial = localStorage.getItem('design'); } catch {} }
-render(initial || 'a');
+renderDashboard();
