@@ -1,4 +1,4 @@
-/* Sano brand: warm sun, two greens for the leaves, forest-green wordmark, cream paper. */
+/* Sano brand: cream paper is the main color; sun yellow and leaf greens are accents. Light-only for now. */
 :root {
   color-scheme: light;
   --font-display: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
@@ -23,37 +23,6 @@
   --heat-3: #2a7a3e;
   --heat-4: #174d26;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    color-scheme: dark;
-    --brand: #4aa95b;
-    --ink: #f3f0e6;
-    --bg: #0f1a13;
-    --card: #17241a;
-    --card-2: #213125;
-    --text: #f3f0e6;
-    --text-2: #bfc8bb;
-    --muted: #82907f;
-    --grid: #2a3a2d;
-    --protein: #3987e5;
-    --carbs: #d95926;
-    --fat: #199e70;
-    --treat: #d55181;
-    --heat-0: #213125;
-    --heat-1: #246832;
-    --heat-2: #2f8540;
-    --heat-3: #4aa95b;
-    --heat-4: #85d490;
-  }
-}
-:root[data-theme="dark"] {
-  color-scheme: dark;
-  --brand: #4aa95b; --ink: #f3f0e6; --bg: #0f1a13; --card: #17241a; --card-2: #213125; --text: #f3f0e6; --text-2: #bfc8bb;
-  --muted: #82907f; --grid: #2a3a2d;
-  --protein: #3987e5; --carbs: #d95926; --fat: #199e70; --treat: #d55181;
-  --heat-0: #213125; --heat-1: #246832; --heat-2: #2f8540; --heat-3: #4aa95b; --heat-4: #85d490;
-}
-
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
 body {
