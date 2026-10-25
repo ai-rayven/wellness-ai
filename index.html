@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#2f855a">
+  <title>Wellness AI</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.png">
+  <link rel="apple-touch-icon" href="icon.png">
+  <style>
+    :root { color-scheme: light dark; --accent: #2f855a; }
+    body { margin: 0; font-family: system-ui, sans-serif; background: Canvas; color: CanvasText;
+           min-height: 100vh; display: grid; place-items: center; padding: 16px; box-sizing: border-box; }
+    main { text-align: center; max-width: 480px; }
+    h1 { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Wellness AI</h1>
+    <p>Mockup goes here.</p>
+  </main>
+  <script>
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+  </script>
+</body>
+</html>
