@@ -1,51 +1,56 @@
+/* youmay brand: coral fork, orange spoon, plum wordmark, cream paper. */
 :root {
   color-scheme: light;
-  --bg: #f2f2f0;
+  --font-display: "Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --brand: #e8684f;        /* logo coral: marks, rings, charts */
+  --brand-2: #f2a65a;      /* logo orange (spoon) */
+  --plum: #2a0f1c;         /* wordmark */
+  --accent: #c94a33;       /* deeper coral for UI: white text on it is 4.66:1 */
+  --bg: #fbf6f0;
   --card: #ffffff;
-  --card-2: #ebebe8;
-  --text: #0b0b0b;
-  --text-2: #52514e;
-  --muted: #8a8984;
-  --grid: #e4e3df;
-  --accent: #2f855a;
+  --card-2: #f3ebe3;
+  --text: #2a0f1c;
+  --text-2: #6b5560;
+  --muted: #a0909a;
+  --grid: #ece2d9;
   --protein: #2a78d6;
-  --carbs: #eb6834;
+  --carbs: #eda100;
   --fat: #1baf7a;
   --treat: #e87ba4;
-  --heat-0: #e6e5e1;
-  --heat-1: #86b6ef;
-  --heat-2: #3987e5;
-  --heat-3: #256abf;
-  --heat-4: #104281;
+  --heat-0: #efe6dd;
+  --heat-1: #f09a84;
+  --heat-2: #e0604a;
+  --heat-3: #b8442e;
+  --heat-4: #82291b;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --bg: #0e0e0d;
-    --card: #1a1a19;
-    --card-2: #262624;
-    --text: #f0efec;
-    --text-2: #c3c2b7;
-    --muted: #8d8c85;
-    --grid: #2c2c2a;
-    --accent: #48b07a;
+    --plum: #fbf1ea;
+    --bg: #1a0f14;
+    --card: #26171e;
+    --card-2: #33212a;
+    --text: #fbf1ea;
+    --text-2: #cbb8bf;
+    --muted: #8f7b84;
+    --grid: #3a2830;
     --protein: #3987e5;
-    --carbs: #d95926;
+    --carbs: #c98500;
     --fat: #199e70;
     --treat: #d55181;
-    --heat-0: #2a2a28;
-    --heat-1: #184f95;
-    --heat-2: #256abf;
-    --heat-3: #3987e5;
-    --heat-4: #86b6ef;
+    --heat-0: #33212a;
+    --heat-1: #8a3626;
+    --heat-2: #b84a33;
+    --heat-3: #e8684f;
+    --heat-4: #f5a08c;
   }
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #0e0e0d; --card: #1a1a19; --card-2: #262624; --text: #f0efec; --text-2: #c3c2b7;
-  --muted: #8d8c85; --grid: #2c2c2a; --accent: #48b07a;
-  --protein: #3987e5; --carbs: #d95926; --fat: #199e70; --treat: #d55181;
-  --heat-0: #2a2a28; --heat-1: #184f95; --heat-2: #256abf; --heat-3: #3987e5; --heat-4: #86b6ef;
+  --plum: #fbf1ea; --bg: #1a0f14; --card: #26171e; --card-2: #33212a; --text: #fbf1ea; --text-2: #cbb8bf;
+  --muted: #8f7b84; --grid: #3a2830;
+  --protein: #3987e5; --carbs: #c98500; --fat: #199e70; --treat: #d55181;
+  --heat-0: #33212a; --heat-1: #8a3626; --heat-2: #b84a33; --heat-3: #e8684f; --heat-4: #f5a08c;
 }
 
 * { box-sizing: border-box; }
@@ -58,6 +63,10 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 button { font: inherit; color: inherit; }
+h1, h2, h3, .big, .wordmark { font-family: var(--font-display); }
+.wordmark { font-weight: 700; letter-spacing: -0.03em; color: var(--plum); }
+.brand { display: flex; align-items: center; gap: 6px; font-size: 20px; }
+.brand .mark { display: block; }
 
 /* Header */
 .top {

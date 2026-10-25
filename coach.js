@@ -117,8 +117,8 @@ const head = (title) => `<div class="c-head">
 
 const bubble = (m, i) => m.from === 'me'
   ? `<div class="msg me">${m.text}</div>`
-  : `<div class="msg ai"><i class="av">✦</i><div>${m.text}${card(m.card, i)}</div></div>`;
-const typingDots = () => (typing ? `<div class="msg ai"><i class="av">✦</i><div class="dots"><span></span><span></span><span></span></div></div>` : '');
+  : `<div class="msg ai"><i class="av">${avMark()}</i><div>${m.text}${card(m.card, i)}</div></div>`;
+const typingDots = () => (typing ? `<div class="msg ai"><i class="av">${avMark()}</i><div class="dots"><span></span><span></span><span></span></div></div>` : '');
 
 // ---------- Chat view ----------
 function chatView() {

@@ -1,11 +1,11 @@
 {
-  "name": "Wellness AI",
-  "short_name": "Wellness",
+  "name": "youmay",
+  "short_name": "youmay",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#2f855a",
+  "background_color": "#fbf6f0",
+  "theme_color": "#e8684f",
   "icons": [
     { "src": "icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ]

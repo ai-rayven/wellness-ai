@@ -92,14 +92,14 @@ function weightChart(id, height = 150) {
     <text x="${padL}" y="${H - 4}" font-size="10" fill="var(--text-2)">${fmtDay(weights[0].date)}</text>
     <text x="${W - padR}" y="${H - 4}" font-size="10" fill="var(--text-2)" text-anchor="end">Today</text>
     ${weights.map((w, i) => `<circle cx="${x(i)}" cy="${y(w.scale)}" data-ty="${y(w.trend)}" r="3" fill="var(--muted)" opacity=".55"/>`).join('')}
-    <path d="${line}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="${line}" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
     <line class="xh" x1="0" x2="0" y1="${padT}" y2="${H - padB}" stroke="var(--text-2)" stroke-dasharray="2 3" visibility="hidden"/>
-    <circle class="xd" r="4.5" fill="var(--accent)" stroke="var(--card)" stroke-width="2" visibility="hidden"/>
+    <circle class="xd" r="4.5" fill="var(--brand)" stroke="var(--card)" stroke-width="2" visibility="hidden"/>
     <rect x="0" y="0" width="${W}" height="${H}" fill="transparent"/>
   </svg>
   <div class="legend">
     <span><span class="dot" style="background:var(--muted);opacity:.55"></span>Scale weight</span>
-    <span><span class="dot" style="background:var(--accent)"></span>Trend</span>
+    <span><span class="dot" style="background:var(--brand)"></span>Trend</span>
   </div>`;
 }
 
@@ -166,7 +166,7 @@ function dashboard() {
   const days = habit.slice(-7);
   return `
   <section class="card coach">
-    <div class="who"><i>✦</i>Your coach</div>
+    <div class="who"><i>${avMark()}</i>Your coach</div>
     <p>You're <b>${proteinLeft}g short on protein</b> today. Tonight's miso salmon bowl covers most of it — you're on pace for <b>${Math.abs(weekChange)} lb/week</b>, right on goal.</p>
     <div class="chips">
       ${['Swap dinner', 'High-protein snack', 'Cook from my pantry'].map((q) => `<button class="chip" data-ask="${q}">${q}</button>`).join('')}
