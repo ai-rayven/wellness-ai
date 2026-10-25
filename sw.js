@@ -1,5 +1,5 @@
 // Network-first: always fetch fresh files while iterating, fall back to cache when offline.
-const CACHE = 'youmay-v1';
+const CACHE = 'sano-v1';
 
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
