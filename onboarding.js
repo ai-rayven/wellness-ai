@@ -1,28 +1,28 @@
-// Onboarding mockup: three designs (Steps, Chat, Story) over one shared flow + swipe engine.
-// Forms are prefilled so the flow can be clicked through quickly.
+// Onboarding mockup (Story design): body stats, swipe broad food groups, free-form "tell us anything",
+// then a tap-through story report that ends on an AI breakdown page. Forms are prefilled for quick click-through.
 
 // ---------- Data ----------
-const STEPS = ['welcome', 'body', 'activity', 'goal', 'protein', 'carbs', 'fats', 'treats', 'report'];
+const STEPS = ['welcome', 'body', 'activity', 'goal', 'protein', 'carbs', 'fats', 'treats', 'ramble', 'report'];
 
 const CATS = {
   protein: { label: 'Proteins', color: 'var(--protein)', ask: 'Which proteins would you happily eat?' },
   carbs: { label: 'Carbs', color: 'var(--carbs)', ask: 'Now carbs. What fuels you?' },
-  fats: { label: 'Fats', color: 'var(--fat)', ask: 'Healthy fats you enjoy?' },
+  fats: { label: 'Fats', color: 'var(--fat)', ask: 'Fats you enjoy?' },
   treats: { label: 'Treats', color: 'var(--treat)', ask: 'Be honest: which treats do you love?' },
 };
 
-// [emoji, name, per-100g note]
+// Broad groups, not specific foods: [emoji, name, examples, word used when naming meals]
 const FOODS = {
-  protein: [['🍗', 'Chicken breast', '31g protein · 165 kcal'], ['🐟', 'Salmon', '25g protein · 208 kcal'], ['🥚', 'Eggs', '13g protein · 155 kcal'],
-    ['🥛', 'Greek yogurt', '10g protein · 59 kcal'], ['🥩', 'Lean beef', '26g protein · 217 kcal'], ['🥡', 'Tofu', '8g protein · 76 kcal'],
-    ['🦐', 'Shrimp', '24g protein · 99 kcal'], ['🦃', 'Turkey', '29g protein · 189 kcal'], ['🫘', 'Lentils', '9g protein · 116 kcal']],
-  carbs: [['🍚', 'White rice', '28g carbs · 130 kcal'], ['🥣', 'Oats', '66g carbs · 389 kcal'], ['🍠', 'Sweet potato', '20g carbs · 86 kcal'],
-    ['🍝', 'Pasta', '31g carbs · 158 kcal'], ['🍞', 'Sourdough', '51g carbs · 270 kcal'], ['🌾', 'Quinoa', '21g carbs · 120 kcal'],
-    ['🍌', 'Banana', '23g carbs · 89 kcal'], ['🫐', 'Berries', '14g carbs · 57 kcal']],
-  fats: [['🥑', 'Avocado', '15g fat · 160 kcal'], ['🥜', 'Peanut butter', '50g fat · 588 kcal'], ['🌰', 'Almonds', '49g fat · 579 kcal'],
-    ['🫒', 'Olive oil', '100g fat · 884 kcal'], ['🧀', 'Cheddar', '33g fat · 403 kcal'], ['🥥', 'Coconut', '33g fat · 354 kcal']],
-  treats: [['🍦', 'Ice cream', '207 kcal'], ['🍫', 'Dark chocolate', '546 kcal'], ['🍪', 'Cookies', '488 kcal'],
-    ['🍩', 'Donuts', '452 kcal'], ['🍬', 'Gummy candy', '343 kcal'], ['🧁', 'Cupcakes', '305 kcal']],
+  protein: [['🍗', 'Poultry', 'Chicken, turkey', 'Chicken'], ['🥩', 'Red meat', 'Beef, lamb', 'Steak'], ['🥓', 'Pork', 'Pork chops, ham', 'Pork'],
+    ['🐟', 'Fish', 'Salmon, tuna, cod', 'Salmon'], ['🦐', 'Shellfish', 'Shrimp, crab, mussels', 'Shrimp'], ['🥚', 'Eggs', 'Any style', 'Eggs'],
+    ['🥛', 'Dairy', 'Yogurt, cottage cheese, milk', 'Greek yogurt'], ['🥡', 'Tofu & soy', 'Tofu, tempeh, edamame', 'Tofu'], ['🫘', 'Beans & lentils', 'Black beans, chickpeas', 'Lentils']],
+  carbs: [['🍚', 'Rice', 'White, brown, jasmine', 'rice'], ['🍝', 'Pasta & noodles', 'Spaghetti, ramen', 'noodles'], ['🍞', 'Bread', 'Toast, wraps, tortillas', 'wraps'],
+    ['🥔', 'Potatoes', 'Russet, sweet potato', 'potatoes'], ['🥣', 'Oats & cereal', 'Oatmeal, granola', 'oats'], ['🍎', 'Fruit', 'Berries, bananas, apples', 'fruit'],
+    ['🌾', 'Whole grains', 'Quinoa, barley, farro', 'quinoa']],
+  fats: [['🥑', 'Avocado', 'Guac, sliced', 'avocado'], ['🥜', 'Nuts & seeds', 'Almonds, chia, peanuts', 'nuts'], ['🫒', 'Oils', 'Olive, avocado oil', 'olive oil'],
+    ['🧀', 'Cheese', 'Cheddar, feta, parmesan', 'cheese'], ['🧈', 'Butter & cream', 'Butter, sour cream', 'butter']],
+  treats: [['🍦', 'Ice cream', 'Frozen desserts', 'ice cream'], ['🍫', 'Chocolate', 'Bars, candy', 'chocolate'], ['🍪', 'Baked goods', 'Cookies, pastries, cake', 'baked goods'],
+    ['🍟', 'Salty snacks', 'Chips, fries, popcorn', 'salty snacks'], ['🥤', 'Sweet drinks', 'Soda, juice, coffee drinks', 'sweet drinks']],
 };
 
 const ACTIVITY = [
@@ -37,16 +37,48 @@ const GOALS = [
   { k: 'gain', icon: '💪', t: 'Build muscle', d: 'Lean bulk', adj: 0.1 },
 ];
 
+const SAMPLE_RAMBLE = 'I’m lactose intolerant so milk wrecks me, but hard cheese is fine. I hate mushrooms and anything with cilantro. '
+  + 'I work night shifts three days a week so my big meal is usually around midnight. I meal prep on Sundays and don’t want to cook more than 20 minutes on weekdays. '
+  + 'I love spicy food, especially Korean and Mexican. Trying to cut back on soda, I drink like 2 cans a day. Groceries are around $80 a week.';
+
+// Mock "AI" extraction: keyword rules over the free-form text. Each yields a note (what we heard) and a rule (what the coach will do).
+const INSIGHTS = [
+  { re: /lactose/i, icon: '🥛', tag: 'Intolerance', note: () => 'Lactose intolerant', rule: () => 'Lactose-free dairy only; hard cheese is OK' },
+  { re: /\b(allerg\w*) to (\w+)/i, icon: '⚠️', tag: 'Allergy', note: (m) => `Allergic to ${m[2]}`, rule: (m) => `Never include ${m[2]}` },
+  { re: /(hate|can’t stand|can't stand|don’t like|don't like) ([^.]+?)(?:\.|$)/i, icon: '🚫', tag: 'Dislikes',
+    note: (m) => `Hates ${m[2].replace(/anything with /i, '')}`, rule: (m) => `Leave out ${m[2].replace(/anything with /i, '')}`,
+    items: (m) => m[2].replace(/anything with /i, '').split(/,? and |, /).map(cap) },
+  { re: /night shifts?/i, icon: '🌙', tag: 'Schedule', note: (_, t) => `Night shifts${/three|3/i.test(t) ? ' 3×/week' : ''}`, rule: () => 'Biggest meal late on shift days' },
+  { re: /meal prep/i, icon: '🥡', tag: 'Cooking', note: (_, t) => `Meal preps${/sunday/i.test(t) ? ' on Sundays' : ''}`, rule: () => 'Batch-cook recipes that keep 4 days' },
+  { re: /(\d+) minutes?/i, icon: '⏱️', tag: 'Time', note: (m) => `≤${m[1]} min on weekdays`, rule: (m) => `Weekday recipes under ${m[1]} minutes` },
+  { re: /(korean|mexican|thai|indian|italian|japanese|chinese|mediterranean)/gi, icon: '🌶️', tag: 'Cuisines', all: true,
+    note: (ms, t) => `${/spicy/i.test(t) ? 'Spicy · ' : ''}${ms.map((m) => cap(m[1])).join(', ')}`, rule: (ms) => `More ${ms.map((m) => cap(m[1])).join(' and ')} flavors` },
+  { re: /soda/i, icon: '🥤', tag: 'Habit', note: (_, t) => `Soda${/(\d+) cans?/i.test(t) ? `, ${t.match(/(\d+) cans?/i)[1]} cans a day` : ''}`,
+    rule: (_, t) => `Swap soda for zero-sugar options${/(\d+) cans?/i.test(t) ? ` (saves ~${t.match(/(\d+) cans?/i)[1] * 140} kcal/day)` : ''}` },
+  { re: /\$(\d+)/, icon: '💵', tag: 'Budget', note: (m) => `$${m[1]} a week on groceries`, rule: (m) => `Grocery lists that stay under $${m[1]}/week` },
+];
+const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+
+function insights(text) {
+  return INSIGHTS.flatMap((r) => {
+    if (r.all) {
+      const ms = [...text.matchAll(r.re)];
+      return ms.length ? [{ ...r, noteT: r.note(ms, text), ruleT: r.rule(ms, text), ms }] : [];
+    }
+    const m = text.match(r.re);
+    return m ? [{ ...r, noteT: r.note(m, text), ruleT: r.rule(m, text), itemsT: r.items ? r.items(m) : [] }] : [];
+  });
+}
+
 // Prefilled answers for quick clicking.
 const state = {
   step: 0,
   sex: 'male', age: 32, height: 70, weight: 182, // height in inches, weight in lb
   activity: 'moderate', goal: 'lose',
   swipes: {}, // food name -> true (like) | false (nope)
-  slide: 0, // story report slide (design C)
+  ramble: SAMPLE_RAMBLE,
+  slide: 0, // report slide; the last index is the AI breakdown page
 };
-let design = 'a';
-try { design = localStorage.getItem('obDesign') || 'a'; } catch {}
 
 // ---------- Profile math ----------
 const fmtHeight = (inches) => `${Math.floor(inches / 12)}′${inches % 12}″`;
@@ -67,21 +99,27 @@ function profile() {
 
   const names = (cat) => liked(cat).map((f) => f[1]);
   const lp = names('protein'), lc = names('carbs'), lf = names('fats'), lt = names('treats');
-  const plant = lp.filter((n) => ['Tofu', 'Lentils'].includes(n)).length;
-  const meat = lp.filter((n) => ['Chicken breast', 'Lean beef', 'Turkey'].includes(n)).length;
-  const sea = lp.filter((n) => ['Salmon', 'Shrimp'].includes(n)).length;
+  const plant = lp.filter((n) => ['Tofu & soy', 'Beans & lentils'].includes(n)).length;
+  const meat = lp.filter((n) => ['Poultry', 'Red meat', 'Pork'].includes(n)).length;
+  const sea = lp.filter((n) => ['Fish', 'Shellfish'].includes(n)).length;
   const tags = [];
   tags.push(plant && !meat ? 'Plant-forward' : sea === 2 ? 'Seafood lover' : 'Omnivore');
   tags.push(lc.length >= 5 ? 'Carb-friendly' : lc.length <= 2 ? 'Low-carb leaning' : 'Balanced carbs');
   if (lt.length >= 3) tags.push('Sweet tooth');
 
+  const found = insights(state.ramble);
+  const lactose = found.some((i) => i.tag === 'Intolerance');
+  const cuisines = (found.find((i) => i.tag === 'Cuisines') || { ms: [] }).ms.map((m) => cap(m[1]));
+  const dish = (cat) => liked(cat).map((f) => f[3]);
+  const dp = dish('protein').map((d) => (lactose && d === 'Greek yogurt' ? 'Lactose-free yogurt' : d)), dc = dish('carbs'), df = dish('fats');
   const meals = [];
-  for (let i = 0; i < 3 && lp.length && lc.length; i++) {
-    const f = lf.length ? ` & ${lf[i % lf.length].toLowerCase()}` : '';
-    meals.push(`${lp[i % lp.length]}, ${lc[i % lc.length].toLowerCase()}${f}`);
+  for (let i = 0; i < 3 && dp.length && dc.length; i++) {
+    const style = cuisines.length ? `${cuisines[i % cuisines.length]}-style ` : '';
+    const fat = df.length ? ` & ${df[i % df.length]}` : '';
+    meals.push(`${style}${style ? dp[i % dp.length].toLowerCase() : dp[i % dp.length]}, ${dc[i % dc.length]}${fat}`.replace(/^./, (c) => c.toUpperCase()));
   }
   const treatKcal = lt.length ? 150 + 50 * Math.min(2, lt.length - 1) : 0;
-  return { kcal, protein, carbs, fat, tdee: Math.round(tdee), tags, lp, lc, lf, lt, meals, treatKcal,
+  return { kcal, protein, carbs, fat, tdee: Math.round(tdee), tags, lp, lc, lf, lt, meals, treatKcal, found,
     avoid: ['protein', 'carbs', 'fats', 'treats'].flatMap((c) => noped(c).map((f) => f[1])) };
 }
 
@@ -102,8 +140,8 @@ function record(cat, name, like) {
   else render();
 }
 
-// ---------- Swipe engine (shared by all designs) ----------
-function deck(cat, cls = '') {
+// ---------- Swipe deck ----------
+function deck(cat) {
   const rest = remaining(cat);
   const total = FOODS[cat].length, done = total - rest.length;
   const cards = rest.slice(0, 3).reverse().map((f, i, arr) => {
@@ -112,11 +150,11 @@ function deck(cat, cls = '') {
     return `<div class="sw-card ${top ? 'is-top' : ''}" data-name="${f[1]}" style="--depth:${depth};--cat:${CATS[cat].color}">
       <div class="stamp like">LIKE</div><div class="stamp nope">NOPE</div>
       <div class="sw-emoji">${f[0]}</div>
-      <div class="sw-info"><b>${f[1]}</b><span>${f[2]} per 100 g</span></div>
+      <div class="sw-info"><b>${f[1]}</b><span>${f[2]}</span></div>
     </div>`;
   }).join('');
-  return `<div class="sw ${cls}" data-cat="${cat}">
-    <div class="sw-count num">${done + 1 > total ? total : done + 1} / ${total}</div>
+  return `<div class="sw" data-cat="${cat}">
+    <div class="sw-count num">${Math.min(done + 1, total)} / ${total}</div>
     <div class="sw-stack">${cards}</div>
     <div class="sw-btns">
       <button class="sw-btn nope" data-swipe="0" aria-label="Don't like">✕</button>
@@ -159,30 +197,19 @@ function bindDeck() {
   card.addEventListener('pointercancel', end);
 }
 
-// ---------- Shared controls ----------
-const stepper = (key, label, show, step, min, max) => `<div class="stepper">
-  <span class="st-label">${label}</span>
-  <div class="st-ctrl">
-    <button data-inc="${key}" data-by="${-step}" data-min="${min}" data-max="${max}" aria-label="Decrease ${label}">−</button>
-    <b class="num">${show(state[key])}</b>
-    <button data-inc="${key}" data-by="${step}" data-min="${min}" data-max="${max}" aria-label="Increase ${label}">+</button>
-  </div>
-</div>`;
-
+// ---------- Controls ----------
 const seg = (key, opts) => `<div class="seg">${opts.map(([v, t]) =>
   `<button data-set="${key}" data-val="${v}" aria-pressed="${state[key] === v}">${t}</button>`).join('')}</div>`;
 
 const options = (key, list) => `<div class="opts">${list.map((o) => `<button class="opt" data-set="${key}" data-val="${o.k}" aria-pressed="${state[key] === o.k}">
   <span class="opt-ic">${o.icon}</span><span class="opt-t"><b>${o.t}</b><span>${o.d}</span></span></button>`).join('')}</div>`;
 
-const bodyFields = () => seg('sex', [['male', 'Male'], ['female', 'Female']])
-  + stepper('height', 'Height', fmtHeight, 1, 48, 90)
-  + stepper('weight', 'Weight', (v) => `${v} lb`, 1, 80, 450)
-  + stepper('age', 'Age', (v) => v, 1, 13, 99);
+const slider = (key, label, show, min, max) => `<label class="c-slider"><span>${label}</span><b class="num">${show(state[key])}</b>
+  <input type="range" data-range="${key}" min="${min}" max="${max}" value="${state[key]}"></label>`;
 
-const chipList = (items, cls = '') => items.length
-  ? `<div class="chips wrap">${items.map((n) => `<span class="chip ${cls}">${n}</span>`).join('')}</div>`
-  : '<span class="muted small">None picked</span>';
+const chips = (items) => items.length
+  ? `<div class="chips wrap">${items.map((n) => `<span class="chip">${n}</span>`).join('')}</div>`
+  : '<span class="c-dim">None</span>';
 
 const macroSplit = (p) => {
   const parts = [['Protein', p.protein * 4, 'var(--protein)', p.protein], ['Carbs', p.carbs * 4, 'var(--carbs)', p.carbs], ['Fat', p.fat * 9, 'var(--fat)', p.fat]];
@@ -190,150 +217,146 @@ const macroSplit = (p) => {
   <div class="grid3" style="margin-top:12px">${parts.map(([n, , c, g]) => `<div class="tile"><div class="k"><span class="dot" style="background:${c}"></span>${n}</div><div class="v num">${g}<span class="muted" style="font-size:13px;font-weight:500">g</span></div></div>`).join('')}</div>`;
 };
 
-// ---------- Design A: Steps (one question per screen) ----------
-function designA() {
-  const s = STEPS[state.step];
-  const screen = (title, sub, body, cta = 'Continue') => `<div class="a-screen">
-    <div class="a-body"><h2 class="a-title">${title}</h2>${sub ? `<p class="muted">${sub}</p>` : ''}${body}</div>
-    ${cta ? `<div class="a-foot"><button class="btn wide" data-next>${cta}</button></div>` : ''}
-  </div>`;
-  if (s === 'welcome') return `<div class="a-screen a-welcome">
-      <div class="a-body"><div class="logo">✦</div><h2 class="a-title">We make it easy to change your body.</h2>
-      <p class="muted">A few questions and some swiping. Then your coach builds meals around food you actually like.</p></div>
-      <div class="a-foot"><button class="btn wide" data-next>Get started</button><p class="muted small" style="text-align:center">Takes about 2 minutes</p></div>
-    </div>`;
-  if (s === 'body') return screen('About you', 'We use this to estimate how much you burn each day.', bodyFields());
-  if (s === 'activity') return screen('How active are you?', 'Think about a typical week.', options('activity', ACTIVITY));
-  if (s === 'goal') return screen('What’s your goal?', '', options('goal', GOALS));
-  if (CATS[s]) return screen(`<span class="cat-pill" style="--cat:${CATS[s].color}">${CATS[s].label}</span>${CATS[s].ask}`,
-    'Swipe right if you like it, left if you don’t.', deck(s), null);
-  const p = profile();
-  return screen('Here’s what we learned', '', `
-    <section class="card"><div class="muted small">Daily target</div>
-      <div class="big num">${p.kcal.toLocaleString()} <span class="muted" style="font-size:15px;font-weight:500">kcal</span></div>
-      <div class="muted small num" style="margin-bottom:12px">You burn about ${p.tdee.toLocaleString()} kcal/day · ${pick(GOALS, state.goal).t.toLowerCase()}</div>
-      ${macroSplit(p)}
-    </section>
-    <section class="card"><div class="card-h"><h2>Your taste profile</h2></div>${chipList(p.tags, 'tag-chip')}</section>
-    <section class="card"><div class="card-h"><h2>Meals we’ll start with</h2></div>
-      ${p.meals.length ? p.meals.map((m) => `<div class="plan-row"><span>🍽️</span><span class="t">${m}</span></div>`).join('') : '<span class="muted small">Swipe a few more foods to get meal ideas.</span>'}
-    </section>
-    <section class="card"><div class="card-h"><h2>Treats</h2></div>
-      <p style="margin:0">${p.treatKcal ? `We’ll keep ~${p.treatKcal} kcal a day for <b>${p.lt.slice(0, 2).join(' or ').toLowerCase()}</b>. No guilt, it’s in the plan.` : 'No treat budget, so there’s more room for meals.'}</p>
-    </section>
-    <section class="card"><div class="card-h"><h2>We’ll avoid</h2></div>${chipList(p.avoid)}</section>`, 'Start my plan');
-}
+// ---------- Screens ----------
+const shell = (bg, body, cta = 'Next') => `<div class="c-screen" style="--bg:${bg}">
+  <div class="c-body">${body}</div>${cta ? `<div class="a-foot"><button class="btn wide light" data-next>${cta}</button></div>` : ''}</div>`;
 
-// ---------- Design B: Chat (the coach runs onboarding) ----------
-function designB() {
-  const p = profile();
-  const ai = (html) => `<div class="msg ai"><i class="av">✦</i><div>${html}</div></div>`;
-  const me = (t) => `<div class="msg me">${t}</div>`;
-  const answer = {
-    welcome: () => me('Let’s do it'),
-    body: () => me(`${state.sex === 'male' ? 'Male' : 'Female'}, ${state.age}, ${fmtHeight(state.height)}, ${state.weight} lb`),
-    activity: () => me(pick(ACTIVITY, state.activity).t),
-    goal: () => me(pick(GOALS, state.goal).t),
-  };
-  const ask = {
-    welcome: () => ai('Hi! I’m your nutrition coach. <b>We make it easy to change your body.</b> Can I ask a few quick questions?'),
-    body: () => ai('First, the basics. I use these to estimate how much energy you burn.'),
-    activity: () => ai('How active is a normal week for you?'),
-    goal: () => ai('And what are we working toward?'),
-  };
-  const out = [];
-  STEPS.slice(0, state.step + 1).forEach((s, i) => {
-    const current = i === state.step;
-    if (CATS[s]) {
-      out.push(ai(`${CATS[s].ask} <span class="muted">Swipe right for yes.</span>`));
-      if (current) out.push(`<div class="b-widget">${deck(s, 'sw-sm')}</div>`);
-      else out.push(me(liked(s).length ? `👍 ${liked(s).map((f) => f[1]).join(', ')}` : 'None of those'));
-      return;
-    }
-    if (s === 'report') {
-      out.push(ai(`Got it, here’s your plan. I’d aim for <b class="num">${p.kcal.toLocaleString()} kcal</b> a day.${macroSplit(p)}`));
-      out.push(ai(`Your taste profile: <b>${p.tags.join(' · ')}</b>. I’ll start you on:
-        ${p.meals.map((m) => `<div class="plan-row" style="margin-top:6px"><span>🍽️</span><span class="t">${m}</span></div>`).join('')}`));
-      out.push(ai(p.treatKcal ? `And I’ll save ~${p.treatKcal} kcal a day for ${p.lt.slice(0, 2).join(' or ').toLowerCase()} 🍫` : 'No treats needed, so more room for real meals.'));
-      out.push(`<div class="b-widget"><button class="btn wide" data-next>Start my plan</button></div>`);
-      return;
-    }
-    out.push(ask[s]());
-    if (!current) return out.push(answer[s]());
-    const widget = s === 'welcome' ? ''
-      : s === 'body' ? `<div class="b-form">${bodyFields()}</div>`
-      : s === 'activity' ? options('activity', ACTIVITY)
-      : options('goal', GOALS);
-    out.push(`<div class="b-widget">${widget}<button class="btn wide" data-next>${s === 'welcome' ? 'Let’s do it' : 'Send'}</button></div>`);
-  });
-  return `<div class="b-chat">${out.join('')}</div>`;
+function rambleScreen() {
+  const found = insights(state.ramble);
+  return shell('#1f2d3a', `<div class="c-kicker">Last one</div>
+    <h2 class="c-big">Tell us anything.</h2>
+    <p class="c-sub" style="margin:-6px 0 14px">Allergies, foods you hate, your schedule, cravings, budget. Just ramble, we’ll sort it out.</p>
+    <div class="ramble">
+      <textarea id="ramble" rows="7" aria-label="Tell us about your eating">${state.ramble}</textarea>
+      <button class="mic-btn ${listening ? 'on' : ''}" data-mic aria-label="Dictate">${listening ? '● Listening…' : '🎙️ Tap to talk'}</button>
+    </div>
+    <div class="heard" id="heard">${heard(found)}</div>`, 'See my results');
 }
+const heard = (found) => found.length
+  ? `<div class="c-dim small">Picked up so far</div><div class="chips wrap">${found.map((i) => `<span class="chip">${i.icon} ${i.noteT}</span>`).join('')}</div>`
+  : '<div class="c-dim small">We’ll pick out preferences as you type.</div>';
 
-// ---------- Design C: Story (bold full-screen, Wrapped-style report) ----------
-function designC() {
-  const s = STEPS[state.step];
-  const shell = (bg, body, cta = 'Next') => `<div class="c-screen" style="--bg:${bg}">
-    <div class="c-body">${body}</div>${cta ? `<div class="a-foot"><button class="btn wide light" data-next>${cta}</button></div>` : ''}</div>`;
-  const slider = (key, label, show, min, max) => `<label class="c-slider"><span>${label}</span><b class="num">${show(state[key])}</b>
-    <input type="range" data-range="${key}" min="${min}" max="${max}" value="${state[key]}"></label>`;
-  if (s === 'welcome') return shell('var(--accent)', '<div class="c-kicker">Wellness AI</div><h2 class="c-huge">We make it easy to change your body.</h2>', 'Let’s go');
-  if (s === 'body') return shell('#22303f', `<h2 class="c-big">About you</h2>${seg('sex', [['male', 'Male'], ['female', 'Female']])}
-    ${slider('height', 'Height', fmtHeight, 48, 90)}${slider('weight', 'Weight', (v) => `${v} lb`, 80, 450)}${slider('age', 'Age', (v) => v, 13, 99)}`);
-  if (s === 'activity') return shell('#3b2a4a', `<h2 class="c-big">How much do you move?</h2>${options('activity', ACTIVITY)}`);
-  if (s === 'goal') return shell('#4a2a2a', `<h2 class="c-big">What do you want to change?</h2>${options('goal', GOALS)}`);
-  if (CATS[s]) return shell('#141414', `<div class="c-kicker"><span class="dot" style="background:${CATS[s].color}"></span>${CATS[s].label}</div><h2 class="c-big">${CATS[s].ask}</h2>${deck(s, 'sw-full')}`, null);
-  // Report as tap-through story slides.
+function report() {
   const p = profile();
   const slides = [
     ['var(--accent)', `<div class="c-kicker">Your daily target</div><div class="c-huge num">${p.kcal.toLocaleString()}</div><div class="c-sub">calories a day to ${pick(GOALS, state.goal).t.toLowerCase()}</div>`],
     ['#22303f', `<div class="c-kicker">Your macros</div><h2 class="c-big num">${p.protein}g protein</h2><div class="c-macros">${macroSplit(p)}</div>`],
     ['#3b2a4a', `<div class="c-kicker">You are</div>${p.tags.map((t) => `<h2 class="c-big" style="margin:4px 0">${t}</h2>`).join('')}<div class="c-sub">Based on ${Object.keys(state.swipes).length} swipes</div>`],
+    ['#1f2d3a', `<div class="c-kicker">In your words</div>${p.found.length ? p.found.map((i) => `<div class="c-meal">${i.icon} ${i.noteT}</div>`).join('') : '<div class="c-sub">Nothing yet. Tell your coach anytime.</div>'}`],
     ['#2a3a2a', `<div class="c-kicker">You’ll be eating</div>${p.meals.map((m) => `<div class="c-meal">🍽️ ${m}</div>`).join('') || '<div class="c-sub">Swipe more foods for ideas</div>'}`],
     ['#4a2a2a', `<div class="c-kicker">Treat budget</div><div class="c-huge num">${p.treatKcal}</div><div class="c-sub">${p.treatKcal ? `kcal a day for ${p.lt.slice(0, 2).join(' or ').toLowerCase()}` : 'kcal. More room for meals'}</div>`],
   ];
-  const i = Math.min(state.slide, slides.length - 1);
-  const last = i === slides.length - 1;
+  const i = Math.min(state.slide, slides.length);
+  const bars = `<div class="story-bars">${[...slides, 0].map((_, j) => `<i class="${j <= i ? 'on' : ''}"></i>`).join('')}</div>`;
+  if (i === slides.length) return breakdown(p, bars);
   return `<div class="c-screen story" style="--bg:${slides[i][0]}">
-    <div class="story-bars">${slides.map((_, j) => `<i class="${j <= i ? 'on' : ''}"></i>`).join('')}</div>
+    ${bars}
     <div class="c-body" data-story>${slides[i][1]}</div>
-    <div class="a-foot">${last ? '<button class="btn wide light" data-next>Start my plan</button>' : '<p class="c-sub" style="text-align:center">Tap to continue</p>'}</div>
+    <div class="a-foot"><p class="c-sub" style="text-align:center">Tap to continue</p></div>
   </div>`;
 }
 
+// Final page: everything the AI learned, in one scrollable breakdown.
+function breakdown(p, bars) {
+  const goal = pick(GOALS, state.goal).t.toLowerCase();
+  const schedule = p.found.find((x) => x.tag === 'Schedule'), time = p.found.find((x) => x.tag === 'Time');
+  const loves = [...p.lp.slice(0, 2), ...p.lc.slice(0, 1)].map((n) => n.toLowerCase());
+  const summary = `You burn about <b>${p.tdee.toLocaleString()} kcal</b> a day. To ${goal} I’ll keep you around <b>${p.kcal.toLocaleString()}</b> with <b>${p.protein}g protein</b>.`
+    + (loves.length ? ` You like ${loves.join(', ')}, so most meals start there.` : '')
+    + (schedule ? ' On night-shift days I’ll move your biggest meal later.' : '')
+    + (time ? ` Weekday cooking stays under ${time.ruleT.match(/\d+/)[0]} minutes.` : '');
+  const groups = Object.entries(CATS).map(([k, c]) => `<div class="bd-row"><span class="bd-k"><span class="dot" style="background:${c.color}"></span>${c.label}</span>${chips(liked(k).map((f) => f[1]))}</div>`).join('');
+  return `<div class="c-screen breakdown" style="--bg:#141414">
+    ${bars}
+    <div class="c-body">
+      <div class="bd-who"><i class="av">✦</i><div><div class="c-kicker">Your AI breakdown</div><div class="c-dim small">Your coach uses this from day one</div></div></div>
+      <p class="bd-summary">${summary}</p>
+
+      <section class="bd-card"><h3>Daily targets</h3>
+        <div class="c-macros">${macroSplit(p)}</div>
+        ${p.treatKcal ? `<p class="c-dim small" style="margin:10px 0 0">Includes ~${p.treatKcal} kcal for treats</p>` : ''}
+      </section>
+
+      <section class="bd-card"><h3>Foods you like</h3>${groups}</section>
+
+      <section class="bd-card"><h3>How I’ll plan for you</h3>
+        ${p.found.length ? p.found.map((x) => `<div class="bd-rule"><span>${x.icon}</span><div><b>${x.ruleT}</b><span class="c-dim small">${x.tag} · “${x.noteT}”</span></div></div>`).join('')
+          : '<p class="c-dim small">Tell me more anytime in chat and I’ll adapt.</p>'}
+      </section>
+
+      <section class="bd-card"><h3>Starter meals</h3>${p.meals.map((m) => `<div class="plan-row"><span>🍽️</span><span class="t">${m}</span></div>`).join('') || '<p class="c-dim small">Swipe more foods for ideas.</p>'}</section>
+
+      <section class="bd-card"><h3>I’ll avoid</h3>${chips([...p.avoid, ...p.found.flatMap((x) => x.itemsT || [])])}</section>
+    </div>
+    <div class="a-foot"><button class="btn wide light" data-next>Start my plan</button></div>
+  </div>`;
+}
+
+function screen() {
+  const s = STEPS[state.step];
+  if (s === 'welcome') return shell('var(--accent)', '<div class="c-kicker">Wellness AI</div><h2 class="c-huge">We make it easy to change your body.</h2>', 'Let’s go');
+  if (s === 'body') return shell('#22303f', `<h2 class="c-big">About you</h2>${seg('sex', [['male', 'Male'], ['female', 'Female']])}
+    ${slider('height', 'Height', fmtHeight, 48, 90)}${slider('weight', 'Weight', (v) => `${v} lb`, 80, 450)}${slider('age', 'Age', (v) => v, 13, 99)}`);
+  if (s === 'activity') return shell('#3b2a4a', `<h2 class="c-big">How much do you move?</h2>${options('activity', ACTIVITY)}`);
+  if (s === 'goal') return shell('#4a2a2a', `<h2 class="c-big">What do you want to change?</h2>${options('goal', GOALS)}`);
+  if (CATS[s]) return shell('#141414', `<div class="c-kicker"><span class="dot" style="background:${CATS[s].color}"></span>${CATS[s].label}</div><h2 class="c-big">${CATS[s].ask}</h2>${deck(s)}`, null);
+  if (s === 'ramble') return rambleScreen();
+  return report();
+}
+
+// ---------- Mock dictation: types the sample out as if spoken ----------
+let listening = false;
+function dictate() {
+  if (listening) return;
+  listening = true;
+  state.ramble = '';
+  render();
+  const words = SAMPLE_RAMBLE.split(' ');
+  let n = 0;
+  const t = setInterval(() => {
+    n += 2;
+    state.ramble = words.slice(0, n).join(' ');
+    const ta = document.getElementById('ramble');
+    if (!ta) return clearInterval(t);
+    ta.value = state.ramble;
+    ta.scrollTop = ta.scrollHeight;
+    document.getElementById('heard').innerHTML = heard(insights(state.ramble));
+    if (n >= words.length) { clearInterval(t); listening = false; render(); }
+  }, 90);
+}
+
 // ---------- Render ----------
-const designs = { a: designA, b: designB, c: designC };
 function render() {
-  document.body.dataset.design = design;
-  ob.innerHTML = designs[design]();
-  document.querySelectorAll('[data-design]').forEach((b) => b.setAttribute('aria-selected', b.dataset.design === design));
+  const s = STEPS[state.step];
+  ob.innerHTML = screen();
   document.getElementById('progress').innerHTML = STEPS.map((_, i) => `<i class="${i <= state.step ? 'on' : ''}"></i>`).join('');
   document.getElementById('back').style.visibility = state.step ? 'visible' : 'hidden';
+  document.body.classList.toggle('on-report', s === 'report');
   bindDeck();
-  if (design === 'b') scrollTo({ top: document.body.scrollHeight });
-  else scrollTo({ top: 0 });
+  scrollTo({ top: 0 });
 }
 
 document.addEventListener('click', (e) => {
-  const el = e.target.closest('[data-next],[data-design],[data-set],[data-inc],[data-swipe],[data-auto],[data-story],#back');
+  const el = e.target.closest('[data-next],[data-set],[data-swipe],[data-auto],[data-story],[data-mic],#back');
   if (!el) return;
   const d = el.dataset;
   if (el.id === 'back') {
-    if (design === 'c' && STEPS[state.step] === 'report' && state.slide) { state.slide--; return render(); }
+    if (STEPS[state.step] === 'report' && state.slide) { state.slide--; return render(); }
     return go(state.step - 1);
   }
   if ('next' in d) return STEPS[state.step] === 'report' ? (location.href = 'index.html') : next();
-  if ('design' in d) {
-    design = d.design;
-    try { localStorage.setItem('obDesign', design); } catch {}
-    return render();
-  }
   if ('set' in d) { state[d.set] = d.val; return render(); }
-  if ('inc' in d) { state[d.inc] = Math.max(+d.min, Math.min(+d.max, state[d.inc] + +d.by)); return render(); }
   if ('swipe' in d) { const c = ob.querySelector('.sw-card.is-top'); return c && fly(c, d.swipe === '1'); }
   if ('auto' in d) return autoSwipe(d.auto);
-  if ('story' in d) { state.slide = Math.min(state.slide + 1, 4); return render(); }
+  if ('story' in d) { state.slide++; return render(); }
+  if ('mic' in d) return dictate();
 });
 document.addEventListener('input', (e) => {
+  if (e.target.id === 'ramble') {
+    state.ramble = e.target.value;
+    document.getElementById('heard').innerHTML = heard(insights(state.ramble));
+    return;
+  }
   const k = e.target.dataset.range;
   if (!k) return;
   state[k] = +e.target.value;
