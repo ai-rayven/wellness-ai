@@ -1,17 +1,8 @@
-// AI coach mockup: three switchable surfaces (Chat, Sheet, Briefing) sharing one scripted "brain".
+// AI coach mockup: full-screen chat with a scripted "brain" that returns action cards.
 // Uses the dashboard's globals (targets, eaten, meals, weekChange, renderDashboard).
 
-const VARIANTS = { a: 'Chat', b: 'Sheet', c: 'Briefing' };
-const SUGGESTIONS = [
-  { icon: '💪', q: 'High-protein snack', sub: 'Close today’s protein gap' },
-  { icon: '📝', q: 'Log: 2 eggs & toast', sub: 'Type or say what you ate' },
-  { icon: '🛒', q: 'Cook from my pantry', sub: 'Recipes from what you bought' },
-  { icon: '🔁', q: 'Swap dinner', sub: 'Same macros, something different' },
-  { icon: '📅', q: 'Plan tomorrow', sub: 'A full day that hits your targets' },
-];
+const SUGGESTIONS = ['High-protein snack', 'Log: 2 eggs & toast', 'Cook from my pantry', 'Swap dinner', 'Plan tomorrow'];
 
-let variant = 'a';
-try { variant = localStorage.getItem('coachVariant') || 'a'; } catch {}
 let thread = []; // { from: 'me' | 'ai', text, card }
 
 const left = () => ({
@@ -65,7 +56,7 @@ function card(c, i) {
       ${c.items.map(([ic, n, k]) => `<div class="plan-row"><span>${ic}</span><span class="t">${n}</span><span class="muted small num">${k}</span></div>`).join('')}
       <div class="rcard-acts"><button class="btn" data-act="${i}">${c.done ? 'Plan saved ✓' : c.act}</button></div>
     </div>`;
-  if (c.type === 'suggest') return `<div class="chips wrap">${SUGGESTIONS.map((s) => `<button class="chip" data-ask="${s.q}">${s.q}</button>`).join('')}</div>`;
+  if (c.type === 'suggest') return `<div class="chips wrap">${SUGGESTIONS.map((q) => `<button class="chip" data-ask="${q}">${q}</button>`).join('')}</div>`;
   return '';
 }
 
@@ -122,18 +113,14 @@ const askBar = (ph = 'Ask your coach or log a meal…') => `<form class="ask">
 const head = (title) => `<div class="c-head">
   <button class="icon-btn" data-close aria-label="Close">✕</button>
   <b>${title}</b>
-  <div class="mini-switch" role="tablist" aria-label="Coach design">
-    ${Object.entries(VARIANTS).map(([k, n]) => `<button data-variant="${k}" aria-selected="${k === variant}">${k.toUpperCase()}</button>`).join('')}
-  </div>
 </div>`;
 
 const bubble = (m, i) => m.from === 'me'
   ? `<div class="msg me">${m.text}</div>`
   : `<div class="msg ai"><i class="av">✦</i><div>${m.text}${card(m.card, i)}</div></div>`;
-const lastOf = (from) => [...thread].reverse().find((m) => m.from === from && !('brief' in m));
 const typingDots = () => (typing ? `<div class="msg ai"><i class="av">✦</i><div class="dots"><span></span><span></span><span></span></div></div>` : '');
 
-// ---------- Variant A: Chat (full-screen conversation) ----------
+// ---------- Chat view ----------
 function chatView() {
   const greet = { from: 'ai', text: `Morning! You’re ${left().protein}g short on protein with ${left().kcal} kcal to go. Want me to fix that?`, card: { type: 'suggest' } };
   const msgs = thread.length ? thread : [greet];
@@ -142,88 +129,21 @@ function chatView() {
     ${contextStrip()}
     <div class="c-scroll">${msgs.map(bubble).join('')}${typingDots()}</div>
     <div class="c-foot">
-      <div class="chips">${SUGGESTIONS.map((s) => `<button class="chip" data-ask="${s.q}">${s.q}</button>`).join('')}</div>
+      <div class="chips">${SUGGESTIONS.map((q) => `<button class="chip" data-ask="${q}">${q}</button>`).join('')}</div>
       ${askBar()}
     </div>
   </div>`;
 }
 
-// ---------- Variant B: Sheet (one focused answer over the dashboard) ----------
-function sheetView() {
-  const lastAi = lastOf('ai'), lastMe = lastOf('me');
-  const body = typing
-    ? `<div class="q-echo">${lastMe.text}</div>${typingDots()}`
-    : lastAi && lastMe
-      ? `<div class="q-echo">${lastMe.text}</div><div class="answer">${lastAi.text}${card(lastAi.card, thread.indexOf(lastAi))}</div>
-         <button class="link" data-reset>← Ask something else</button>`
-      : `<div class="list">${SUGGESTIONS.map((s) => `<button class="list-row" data-ask="${s.q}">
-           <span class="ic">${s.icon}</span><span class="t"><b>${s.q}</b><span class="muted small">${s.sub}</span></span><span class="muted">›</span>
-         </button>`).join('')}</div>`;
-  return `<div class="c-backdrop" data-close></div>
-  <div class="c-sheet">
-    <div class="grab"></div>
-    ${head('Coach')}
-    ${contextStrip()}
-    <div class="c-scroll">${body}</div>
-    <div class="c-foot">${askBar('What do you need?')}</div>
-  </div>`;
-}
-
-// ---------- Variant C: Briefing (proactive cards first, ask second) ----------
-const briefing = [
-  { tag: 'Protein gap', text: () => `You’re ${left().protein}g short. A quick fix that fits ${left().kcal} kcal:`, q: 'High-protein snack' },
-  { tag: 'Pantry', text: () => 'Chicken thighs from Tuesday’s shop expire tomorrow.', q: 'Cook from my pantry' },
-  { tag: 'Weekly check-in', text: () => `Trend is ${weekChange} lb this week, right on pace. I’d keep targets as they are.`, q: null },
-];
-let briefState = {}; // index -> 'open' | 'ok' | 'dismissed'
-
-function briefingView() {
-  const cards = briefing.map((b, i) => {
-    if (briefState[i] === 'dismissed') return '';
-    const ans = thread.find((m) => m.brief === i);
-    return `<div class="bcard">
-      <div class="tag">${b.tag}</div>
-      <p>${b.text()}</p>
-      ${ans ? card(ans.card, thread.indexOf(ans)) : b.q
-        ? `<div class="rcard-acts"><button class="btn" data-brief="${i}">Show me</button><button class="btn ghost" data-dismiss="${i}">Not now</button></div>`
-        : `<div class="rcard-acts"><button class="btn" data-dismiss="${i}">${briefState[i] === 'ok' ? 'Kept ✓' : 'Sounds good'}</button><button class="btn ghost" data-ask="Adjust my targets">Adjust</button></div>`}
-    </div>`;
-  }).join('');
-  const lastMe = lastOf('me'), lastAi = lastOf('ai');
-  return `<div class="c-full">
-    ${head('Today’s briefing')}
-    <div class="c-scroll">
-      <div class="brief-hi">
-        <div class="big num">${left().kcal}<span class="muted" style="font-size:15px;font-weight:500"> kcal left</span></div>
-        <div class="muted small num">${left().protein}g protein to go · ${((n) => `${n} meal${n === 1 ? '' : 's'} planned`)(meals.filter((m) => !m.done).length)}</div>
-      </div>
-      ${lastMe ? `<div class="bcard asked"><div class="tag">You asked: ${lastMe.text}</div>
-        ${typing ? typingDots() : `<p>${lastAi.text}</p>${card(lastAi.card, thread.indexOf(lastAi))}`}</div>` : ''}
-      ${cards || '<p class="muted small" style="text-align:center">You’re all caught up.</p>'}
-    </div>
-    <div class="c-foot">${askBar()}</div>
-  </div>`;
-}
-
-// Briefing "Show me" answers inline inside its own card (no typing delay needed).
-function openBrief(i) {
-  const r = reply(briefing[i].q);
-  thread.push({ from: 'ai', brief: i, ...r });
-  renderCoach();
-}
-
 // ---------- Mount ----------
 const layer = document.getElementById('coach');
-const views = { a: chatView, b: sheetView, c: briefingView };
 
 function renderCoach() {
   if (layer.hidden) return;
   const focused = document.activeElement && document.activeElement.name === 'q';
-  layer.classList.remove('v-a', 'v-b', 'v-c');
-  layer.classList.add('v-' + variant);
-  layer.innerHTML = views[variant]();
+  layer.innerHTML = chatView();
   const sc = layer.querySelector('.c-scroll');
-  if (sc && variant === 'a') sc.scrollTop = sc.scrollHeight;
+  sc.scrollTop = sc.scrollHeight;
   if (focused) layer.querySelector('input[name=q]').focus();
 }
 
@@ -244,7 +164,7 @@ function closeCoach() {
 addEventListener('popstate', () => { if (location.hash !== '#coach' && !layer.hidden) closeCoach(); });
 
 document.addEventListener('click', (e) => {
-  const el = e.target.closest('[data-ask],[data-close],[data-variant],[data-act],[data-reset],[data-brief],[data-dismiss],[data-coach]');
+  const el = e.target.closest('[data-ask],[data-close],[data-act],[data-coach]');
   if (!el) return;
   const d = el.dataset;
   if ('coach' in d) return openCoach();
@@ -254,20 +174,7 @@ document.addEventListener('click', (e) => {
     return;
   }
   if ('close' in d) return closeCoach();
-  if ('variant' in d) {
-    variant = d.variant;
-    try { localStorage.setItem('coachVariant', variant); } catch {}
-    return renderCoach();
-  }
   if ('act' in d) return act(+d.act);
-  if ('reset' in d) { thread = []; return renderCoach(); }
-  if ('brief' in d) return openBrief(+d.brief);
-  if ('dismiss' in d) {
-    const i = +d.dismiss;
-    briefState[i] = briefing[i].q ? 'dismissed' : 'ok';
-    if (briefing[i].q === null) setTimeout(() => { briefState[i] = 'dismissed'; renderCoach(); }, 800);
-    return renderCoach();
-  }
 });
 document.addEventListener('submit', (e) => {
   if (!e.target.matches('.ask')) return;
