@@ -7,12 +7,20 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Sano · Welcome</title>
+  <script>
+    // Apply the chosen brand before CSS paints (see brand.js).
+    (function () {
+      var b = new URLSearchParams(location.search).get('brand');
+      try { b = b || localStorage.getItem('brand'); } catch (e) {}
+      if (b === 'youmay') document.documentElement.dataset.brand = b;
+    })();
+  </script>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.png">
   <link rel="apple-touch-icon" href="icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="onboarding.css">
 </head>
@@ -20,6 +28,7 @@
   <header class="ob-top">
     <button class="icon-btn" id="back" aria-label="Back">‹</button>
     <div class="ob-progress" id="progress"></div>
+    <button class="brand-chip" data-brand-switch aria-label="Switch brand">⇄ <span data-other></span></button>
   </header>
   <main id="ob"></main>
 

@@ -223,7 +223,7 @@ const shell = (tint, body, cta = 'Next') => `<div class="c-screen" style="--tint
 
 function rambleScreen() {
   const found = insights(state.ramble);
-  return shell('var(--sun)', `<div class="c-kicker">Last one</div>
+  return shell('var(--tint-1)', `<div class="c-kicker">Last one</div>
     <h2 class="c-big">Tell us anything.</h2>
     <p class="c-sub" style="margin:-6px 0 14px">Allergies, foods you hate, your schedule, cravings, budget. Just ramble, we’ll sort it out.</p>
     <div class="ramble">
@@ -239,12 +239,12 @@ const heard = (found) => found.length
 function report() {
   const p = profile();
   const slides = [
-    ['var(--sun)', `<div class="c-kicker">Your daily target</div><div class="c-huge num">${p.kcal.toLocaleString()}</div><div class="c-sub">calories a day to ${pick(GOALS, state.goal).t.toLowerCase()}</div>`],
-    ['#8cc152', `<div class="c-kicker">Your macros</div><h2 class="c-big num">${p.protein}g protein</h2><div class="c-macros">${macroSplit(p)}</div>`],
-    ['var(--accent)', `<div class="c-kicker">You are</div>${p.tags.map((t) => `<h2 class="c-big" style="margin:4px 0">${t}</h2>`).join('')}<div class="c-sub">Based on ${Object.keys(state.swipes).length} swipes</div>`],
-    ['var(--sun)', `<div class="c-kicker">In your words</div>${p.found.length ? p.found.map((i) => `<div class="c-meal">${i.icon} ${i.noteT}</div>`).join('') : '<div class="c-sub">Nothing yet. Tell your coach anytime.</div>'}`],
-    ['#8cc152', `<div class="c-kicker">You’ll be eating</div>${p.meals.map((m) => `<div class="c-meal">🍽️ ${m}</div>`).join('') || '<div class="c-sub">Swipe more foods for ideas</div>'}`],
-    ['var(--sun)', `<div class="c-kicker">Treat budget</div><div class="c-huge num">${p.treatKcal}</div><div class="c-sub">${p.treatKcal ? `kcal a day for ${p.lt.slice(0, 2).join(' or ').toLowerCase()}` : 'kcal. More room for meals'}</div>`],
+    ['var(--tint-1)', `<div class="c-kicker">Your daily target</div><div class="c-huge num">${p.kcal.toLocaleString()}</div><div class="c-sub">calories a day to ${pick(GOALS, state.goal).t.toLowerCase()}</div>`],
+    ['var(--tint-2)', `<div class="c-kicker">Your macros</div><h2 class="c-big num">${p.protein}g protein</h2><div class="c-macros">${macroSplit(p)}</div>`],
+    ['var(--tint-3)', `<div class="c-kicker">You are</div>${p.tags.map((t) => `<h2 class="c-big" style="margin:4px 0">${t}</h2>`).join('')}<div class="c-sub">Based on ${Object.keys(state.swipes).length} swipes</div>`],
+    ['var(--tint-1)', `<div class="c-kicker">In your words</div>${p.found.length ? p.found.map((i) => `<div class="c-meal">${i.icon} ${i.noteT}</div>`).join('') : '<div class="c-sub">Nothing yet. Tell your coach anytime.</div>'}`],
+    ['var(--tint-2)', `<div class="c-kicker">You’ll be eating</div>${p.meals.map((m) => `<div class="c-meal">🍽️ ${m}</div>`).join('') || '<div class="c-sub">Swipe more foods for ideas</div>'}`],
+    ['var(--tint-1)', `<div class="c-kicker">Treat budget</div><div class="c-huge num">${p.treatKcal}</div><div class="c-sub">${p.treatKcal ? `kcal a day for ${p.lt.slice(0, 2).join(' or ').toLowerCase()}` : 'kcal. More room for meals'}</div>`],
   ];
   const i = Math.min(state.slide, slides.length);
   const bars = `<div class="story-bars">${[...slides, 0].map((_, j) => `<i class="${j <= i ? 'on' : ''}"></i>`).join('')}</div>`;
@@ -266,7 +266,7 @@ function breakdown(p, bars) {
     + (schedule ? ' On night-shift days I’ll move your biggest meal later.' : '')
     + (time ? ` Weekday cooking stays under ${time.ruleT.match(/\d+/)[0]} minutes.` : '');
   const groups = Object.entries(CATS).map(([k, c]) => `<div class="bd-row"><span class="bd-k"><span class="dot" style="background:${c.color}"></span>${c.label}</span>${chips(liked(k).map((f) => f[1]))}</div>`).join('');
-  return `<div class="c-screen breakdown" style="--tint:#8cc152">
+  return `<div class="c-screen breakdown" style="--tint:var(--tint-2)">
     ${bars}
     <div class="c-body">
       <div class="bd-who"><i class="av">${avMark()}</i><div><div class="c-kicker">Your AI breakdown</div><div class="c-dim small">Your coach uses this from day one</div></div></div>
@@ -295,14 +295,14 @@ function breakdown(p, bars) {
 function screen() {
   const s = STEPS[state.step];
   if (s === 'welcome') return `<div class="c-screen">
-    <div class="c-body welcome">${mark({ size: 132 })}<div class="wordmark c-word">Sano</div>
+    <div class="c-body welcome">${mark({ size: 132 })}<div class="wordmark c-word">${BRAND.name}</div>${BRAND.tagline ? `<div class="tagline">${BRAND.tagline}</div>` : ''}
       <h2 class="c-big" style="margin-top:36px">We make it easy to change your body.</h2></div>
     <div class="a-foot"><button class="btn wide" data-next>Let’s go</button></div></div>`;
-  if (s === 'body') return shell('#8cc152', `<h2 class="c-big">About you</h2>${seg('sex', [['male', 'Male'], ['female', 'Female']])}
+  if (s === 'body') return shell('var(--tint-2)', `<h2 class="c-big">About you</h2>${seg('sex', [['male', 'Male'], ['female', 'Female']])}
     ${slider('height', 'Height', fmtHeight, 48, 90)}${slider('weight', 'Weight', (v) => `${v} lb`, 80, 450)}${slider('age', 'Age', (v) => v, 13, 99)}`);
-  if (s === 'activity') return shell('var(--sun)', `<h2 class="c-big">How much do you move?</h2>${options('activity', ACTIVITY)}`);
-  if (s === 'goal') return shell('var(--accent)', `<h2 class="c-big">What do you want to change?</h2>${options('goal', GOALS)}`);
-  if (CATS[s]) return shell('var(--sun)', `<div class="c-kicker"><span class="dot" style="background:${CATS[s].color}"></span>${CATS[s].label}</div><h2 class="c-big">${CATS[s].ask}</h2>${deck(s)}`, null);
+  if (s === 'activity') return shell('var(--tint-1)', `<h2 class="c-big">How much do you move?</h2>${options('activity', ACTIVITY)}`);
+  if (s === 'goal') return shell('var(--tint-3)', `<h2 class="c-big">What do you want to change?</h2>${options('goal', GOALS)}`);
+  if (CATS[s]) return shell('var(--tint-1)', `<div class="c-kicker"><span class="dot" style="background:${CATS[s].color}"></span>${CATS[s].label}</div><h2 class="c-big">${CATS[s].ask}</h2>${deck(s)}`, null);
   if (s === 'ramble') return rambleScreen();
   return report();
 }
