@@ -9,6 +9,66 @@
 
 **Later, for the App Store:** native Apple and Google sign-in (`expo-apple-authentication`, `@react-native-google-signin/google-signin`) in an Expo development build, in-app account deletion (Apple requires it), and EAS builds and store submission.
 
+## Decisions
+
+- **Name:** Sano.
+- **Sign-in:** Google only in the PWA. Apple is added with the App Store release.
+- **Firebase:** one project for now, with Firestore in `nam5` (US multi-region; this can't be changed later).
+- **Tooling:** TypeScript, Expo Router, light theme only, and no monorepo tooling. Plain shell scripts start and deploy everything.
+
+## Project structure
+
+```
+wellness-ai/
+├── frontend/                  Expo app (PWA now, iOS/Android later)
+│   ├── src/app/               Expo Router screens (file = route)
+│   │   ├── _layout.tsx        sends users to sign-in → setup → tabs
+│   │   ├── sign-in.tsx
+│   │   ├── setup.tsx          sex, birth date, targets
+│   │   ├── weight.tsx         opened from + and the Dashboard card
+│   │   ├── food/
+│   │   │   ├── search.tsx     search + recent foods
+│   │   │   └── [id].tsx       grams, meal, log/edit/delete
+│   │   └── (tabs)/
+│   │       ├── _layout.tsx    tab bar with center + and greyed-out Coach
+│   │       ├── index.tsx      Dashboard
+│   │       ├── log.tsx        Food Log
+│   │       └── profile.tsx
+│   ├── src/components/        shared UI (cards, week grid, charts)
+│   ├── src/services/          auth, profile, food, log, weight (see App services)
+│   ├── src/lib/               firebase.ts, types.ts, nutrients.ts
+│   ├── src/global.css         Tailwind entry
+│   ├── tailwind.config.js     brand colors from docs/styles.css
+│   ├── app.json
+│   └── package.json
+├── backend/
+│   ├── functions/             Cloud Functions (TypeScript)
+│   │   ├── src/index.ts       searchFoods
+│   │   └── package.json
+│   ├── firestore.rules
+│   └── firestore.indexes.json
+├── docs/                      mockups, MVP walkthrough and these docs (GitHub Pages)
+├── scripts/
+│   ├── dev.sh                 Firebase emulators + Expo web together; Ctrl-C stops both
+│   └── deploy.sh              expo export -p web, then firebase deploy
+├── firebase.json              hosting → frontend/dist, functions → backend/functions, rules → backend/
+├── .firebaserc                Firebase project id
+└── README.md
+```
+
+- `frontend/` and `backend/functions/` each have their own `package.json`. Nothing is shared between them. The `Food` type returned by `searchFoods` is defined in both.
+- Coach has no screen: it's a disabled button in the custom tab bar.
+- `docs/mvp.html` is the clickable reference for every flow, and **View stored data** on its Profile tab shows the exact Firestore documents to produce.
+
+**Setup notes** (from a first scaffolding attempt with Expo SDK 58):
+- Create the app with `npx create-expo-app@latest frontend`. The default template is TypeScript and Expo Router, and it puts routes in `src/app/`. Delete its example screens, components and assets.
+- Add packages with `npx expo install` so versions match the SDK: `nativewind`, `lucide-react-native`, `react-native-svg`, `firebase`, plus `tailwindcss@^3.4` as a dev dependency. NativeWind 4.x needs Tailwind 3, not 4.
+- Set `web.output` in `app.json` to `"single"`. That builds one `index.html`, which Firebase Hosting serves for every route through an SPA rewrite.
+- Build the custom tab bar with the headless tabs in `expo-router/ui` (`Tabs`, `TabList`, `TabTrigger`, `TabSlot`), which work on web and native.
+- In `dev.sh`, run the emulators with `--project demo-sano`. A `demo-` project id runs fully offline with no real project or credentials. When the Edamam keys aren't set in the emulator, `searchFoods` should return a few mock foods so the app works before you sign up for Edamam.
+
+**Your setup tasks:** create the Firebase project (Blaze plan, Firestore in `nam5`), enable Google sign-in and set up its consent screen, and sign up for Edamam's Basic plan to get the app ID and key for Secret Manager.
+
 ## MVP scope
 
 **Sign in**
