@@ -43,6 +43,7 @@ function RootStack() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="food/search" />
         <Stack.Screen name="food/[id]" />
+        <Stack.Screen name="weight" />
       </Stack.Protected>
     </Stack>
   );

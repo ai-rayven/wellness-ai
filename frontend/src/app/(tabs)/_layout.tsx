@@ -23,6 +23,11 @@ export default function TabsLayout() {
     router.push({ pathname: '/food/search', params: { meal: mealAt(now), date: toIsoDate(now) } });
   }
 
+  function logWeight() {
+    setPlusOpen(false);
+    router.push('/weight');
+  }
+
   return (
     <Tabs className="flex-1 bg-bg">
       <TabSlot />
@@ -52,7 +57,7 @@ export default function TabsLayout() {
           <TabButton icon={User} label="Profile" />
         </TabTrigger>
       </TabList>
-      <PlusSheet visible={plusOpen} onLogFood={logFood} onClose={() => setPlusOpen(false)} />
+      <PlusSheet visible={plusOpen} onLogFood={logFood} onLogWeight={logWeight} onClose={() => setPlusOpen(false)} />
     </Tabs>
   );
 }
