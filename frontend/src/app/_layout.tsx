@@ -40,7 +40,9 @@ function RootStack() {
         <Stack.Screen name="setup" />
       </Stack.Protected>
       <Stack.Protected guard={session.status === 'ready'}>
-        <Stack.Screen name="index" />
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="food/search" />
+        <Stack.Screen name="food/[id]" />
       </Stack.Protected>
     </Stack>
   );

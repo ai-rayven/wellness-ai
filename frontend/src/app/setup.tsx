@@ -8,6 +8,7 @@ import { NumberField } from '@/components/number-field';
 import { Screen } from '@/components/screen';
 import { Segmented } from '@/components/segmented';
 import { ageOn, isIsoDate, toIsoDate } from '@/lib/dates';
+import { NUTRIENTS } from '@/lib/nutrients';
 import { DEFAULT_TARGETS, profileInputError, type ProfileInput } from '@/lib/profile';
 import type { Nutrients, Sex } from '@/lib/types';
 import { createProfile } from '@/services/profile';
@@ -16,13 +17,6 @@ import { useSessionWith } from '@/services/session';
 const SEXES: { value: Sex; label: string }[] = [
   { value: 'male', label: 'Male' },
   { value: 'female', label: 'Female' },
-];
-
-const TARGET_FIELDS: { key: keyof Nutrients; label: string; unit: string }[] = [
-  { key: 'kcal', label: 'Calories', unit: 'kcal' },
-  { key: 'proteinG', label: 'Protein', unit: 'g' },
-  { key: 'carbsG', label: 'Carbs', unit: 'g' },
-  { key: 'fatG', label: 'Fat', unit: 'g' },
 ];
 
 type TargetText = Record<keyof Nutrients, string>;
@@ -86,7 +80,7 @@ export default function Setup() {
 
         <Field label="Daily targets">
           <View className="gap-2">
-            {[TARGET_FIELDS.slice(0, 2), TARGET_FIELDS.slice(2)].map((row) => (
+            {[NUTRIENTS.slice(0, 2), NUTRIENTS.slice(2)].map((row) => (
               <View key={row[0].key} className="flex-row gap-2">
                 {row.map((f) => (
                   <NumberField

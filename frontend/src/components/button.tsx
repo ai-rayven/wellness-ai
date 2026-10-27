@@ -3,17 +3,19 @@ import { Pressable, Text } from 'react-native';
 interface ButtonProps {
   label: string;
   onPress: () => void;
-  variant?: 'primary' | 'outline';
+  variant?: 'primary' | 'outline' | 'ghost';
   disabled?: boolean;
 }
 
 const BOX = {
   primary: 'bg-accent',
   outline: 'bg-card border border-grid',
+  ghost: 'bg-card-2',
 };
 const LABEL = {
   primary: 'text-white',
   outline: 'text-text',
+  ghost: 'text-text',
 };
 
 export function Button({ label, onPress, variant = 'primary', disabled = false }: ButtonProps) {

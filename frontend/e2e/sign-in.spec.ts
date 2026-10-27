@@ -1,27 +1,11 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 import { listDocuments, resetEmulators } from './emulators';
+import { signInWithGoogle } from './helpers';
 
 test.beforeEach(async () => {
   await resetEmulators();
 });
-
-/** Signs in through the Auth emulator's Google popup, as a new or an existing account. */
-async function signInWithGoogle(page: Page, account: 'new' | 'existing') {
-  const popupPromise = page.waitForEvent('popup');
-  await page.getByRole('button', { name: 'Continue with Google' }).click();
-  const popup = await popupPromise;
-  // The emulator page shows its buttons before its script handles clicks.
-  await popup.waitForLoadState('load');
-  if (account === 'new') {
-    await popup.getByRole('button', { name: 'Add new account' }).click();
-    await popup.getByRole('button', { name: 'Auto-generate user information' }).click();
-    await popup.getByRole('button', { name: 'Sign in with Google.com' }).click();
-  } else {
-    await popup.locator('li').first().click();
-  }
-  await popup.waitForEvent('close');
-}
 
 test('a new user signs in, sets up the profile and signs out', async ({ page }) => {
   await page.goto('/');
@@ -62,6 +46,7 @@ test('a new user signs in, sets up the profile and signs out', async ({ page }) 
   await page.reload();
   await expect(page.getByText('Daily target: 2200 kcal')).toBeVisible();
 
+  await page.getByRole('tab', { name: 'Profile' }).click();
   await page.getByRole('button', { name: 'Sign out' }).click();
   await expect(page.getByRole('button', { name: 'Continue with Google' })).toBeVisible();
 
