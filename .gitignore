@@ -19,4 +19,5 @@ backend/functions/.secret.local
 # Playwright
 frontend/test-results/
 frontend/playwright-report/
+frontend/screens/
 .firebase
