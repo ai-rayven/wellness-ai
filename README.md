@@ -14,6 +14,7 @@ See [docs/mvp.md](docs/mvp.md) for scope, decisions and the data model.
 ```sh
 npm --prefix frontend install
 npm --prefix backend/functions install
+npx --prefix frontend playwright install chromium   # for the E2E tests
 ```
 
 ## Commands
@@ -21,7 +22,7 @@ npm --prefix backend/functions install
 | Command | What it does |
 | --- | --- |
 | `scripts/dev.sh` | Starts the Firebase emulators (offline `demo-sano` project) and Expo web. Ctrl-C stops both. |
-| `scripts/check.sh` | Typecheck, lint and tests for the frontend and the Cloud Functions. The functions tests run in the emulators, so stop `dev.sh` first. |
+| `scripts/check.sh` | Typecheck, lint and tests for the frontend and the Cloud Functions. The functions and E2E tests run in the emulators, so stop `dev.sh` first. |
 
 Expo web runs on http://localhost:8081 and the Emulator UI on http://localhost:4000.
 

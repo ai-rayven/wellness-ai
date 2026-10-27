@@ -7,7 +7,7 @@ cd "$(dirname "$0")/.."
 npm --prefix backend/functions run build
 npm --prefix backend/functions run build:watch &
 firebase emulators:start --project demo-sano &
-npm --prefix frontend run web &
+EXPO_PUBLIC_FIREBASE_EMULATORS=1 npm --prefix frontend run web &
 
 trap 'kill 0' EXIT
 wait

@@ -15,3 +15,7 @@ backend/functions/.secret.local
 
 # Firebase emulator logs
 *-debug.log
+
+# Playwright
+frontend/test-results/
+frontend/playwright-report/
