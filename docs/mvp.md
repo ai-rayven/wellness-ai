@@ -7,7 +7,7 @@
 - Daily calorie and macro targets are entered by hand in the profile.
 
 **Nutrition logging**
-1. Search for a food by name. Results come from USDA FoodData Central (a free third-party API).
+1. Search for a food by name. Results come from the Edamam Food Database API (Basic plan, $14/month after a 30-day trial).
 2. Choose a result, a meal (breakfast, lunch, dinner or snack) and the number of servings, then log it.
 3. If a food isn't found, create a custom food by typing in the label values.
 4. The Today view shows entries grouped by meal and totals against targets. Earlier days can be browsed.
@@ -31,14 +31,14 @@ config:
 flowchart LR
     user(("User"))
     social(("Google / Apple"))
-    usda(("USDA<br/>FoodData Central"))
+    edamam(("Edamam<br/>Food Database"))
 
     subgraph fb["Firebase project"]
         hosting["Hosting<br/>PWA files"]
         app(("Sano App"))
         auth(("Auth"))
         fn(("Cloud Function<br/>searchFoods"))
-        secret["Secret Manager<br/>USDA API key"]
+        secret["Secret Manager<br/>Edamam app ID + key"]
         subgraph fs["Cloud Firestore"]
             users[("users")]
             logs[("logEntries")]
@@ -54,7 +54,7 @@ flowchart LR
     app -->|"Read / write<br/>via Security Rules"| fs
     app -->|"Search name"| fn
     secret -.->|"Key"| fn
-    fn -->|"Query"| usda
+    fn -->|"Query"| edamam
     fn -->|"Cache results"| foods
 
     classDef service fill:#e8efff,stroke:#5474b4,stroke-width:2px
@@ -64,12 +64,12 @@ flowchart LR
     class app,auth,fn service
     class users,foods,logs,weights store
     class hosting,secret artifact
-    class social,usda external
+    class social,edamam external
 ```
 
 - The app reads and writes Firestore directly through the Firebase SDK. Security Rules make sure each user can only access their own data.
-- Only the `searchFoods` function talks to USDA, so the API key never ships in the app. Switching food APIs later means changing only this function.
-- Cloud Functions and Secret Manager require the **Blaze** (pay-as-you-go) plan. At MVP traffic, usage stays within the free allowance.
+- Only the `searchFoods` function talks to Edamam, so the API credentials never ship in the app. Switching food APIs later means changing only this function.
+- Cloud Functions and Secret Manager require the **Blaze** (pay-as-you-go) plan. At MVP traffic, usage stays within the free allowance. Edamam Basic is the only fixed cost ($14/month after the trial).
 
 ## Data model (Firestore)
 
@@ -94,9 +94,9 @@ erDiagram
         timestamp createdAt
     }
     foods {
-        string id PK "usda_fdcId or auto id"
-        string source "usda | custom"
-        string sourceId "USDA fdcId"
+        string id PK "edamam_foodId or auto id"
+        string source "edamam | custom"
+        string sourceId "Edamam foodId"
         string name
         string brand
         number servingSize
@@ -126,10 +126,11 @@ erDiagram
 | `users/{uid}` | Owner only |
 | `users/{uid}/logEntries/{id}` | Owner only |
 | `users/{uid}/weights/{date}` | Owner only |
-| `foods/{id}` | USDA foods: anyone signed in can read, only the function writes. Custom foods: creator only |
+| `foods/{id}` | Edamam foods: anyone signed in can read, only the function writes. Custom foods: creator only |
 
 - Each log entry stores copies of the food's name and nutrients. A day's view then takes a single query by `date`, and history doesn't change if a food is edited later.
 - A weight's document id is its date, which enforces one entry per day. Weights are stored in kg and converted for display using `weightUnit`.
+- **Open item:** Edamam's terms limit storing its data. For the MVP we store food details anyway, so past logs stay correct if Edamam changes a food. Confirm the terms (or switch providers) before a wider launch.
 
 ## App entities
 
@@ -195,7 +196,7 @@ classDiagram
     }
     class FoodSource {
         <<enumeration>>
-        usda
+        edamam
         custom
     }
     class WeightUnit {
