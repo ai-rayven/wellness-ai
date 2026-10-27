@@ -36,7 +36,8 @@ async function search(query: string): Promise<Food[]> {
     return await searchEdamam(query, credentials);
   } catch (error) {
     if (!(error instanceof EdamamError)) throw error;
-    logger.error('Edamam search failed', { query, message: error.message });
+    // Not `message`: the logger writes its own text to that field.
+    logger.error('Edamam search failed', { query, reason: error.message });
     throw new HttpsError('unavailable', 'Food search is unavailable. Try again later.');
   }
 }
