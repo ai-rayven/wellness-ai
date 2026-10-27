@@ -43,3 +43,8 @@ For production, store them in Secret Manager with `firebase functions:secrets:se
 
 `reportIssue` creates the issues that users send from the Profile tab in this repo. In the emulator without a token, it answers with a fake issue #1 and creates nothing.
 For production, create a fine-grained personal access token with access to only this repo and the permission **Issues: Read and write**. Then store it with `firebase functions:secrets:set GITHUB_ISSUES_TOKEN`.
+
+## Invites
+
+Only invited emails can create an account. The `checkInvite` function (a Firebase Auth blocking function) reads the list from the Firestore document `config/access`, field `emails` (an array of strings). Edit it in the Firebase console. Without the document, no one can create an account. Accounts that exist already are not affected, so to remove access, also delete the account in Authentication.
+Blocking functions need Firebase Authentication with Identity Platform. The E2E tests invite `ana@example.com`.

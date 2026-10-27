@@ -64,3 +64,11 @@ test('setup rejects a birth date in the future', async ({ page }) => {
   await expect(page.getByText('Birth date cannot be in the future.')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Continue' })).toBeDisabled();
 });
+
+test('an email that is not invited cannot create an account', async ({ page }) => {
+  await page.goto('/');
+  await signInWithGoogle(page, 'new', 'eve@example.com');
+
+  await expect(page.getByText('This account is not invited. Ask the owner of Sano to add your email.')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Continue with Google' })).toBeVisible();
+});

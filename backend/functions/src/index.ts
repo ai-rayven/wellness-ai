@@ -1,9 +1,11 @@
 import { initializeApp } from 'firebase-admin/app';
 import { FieldValue, getFirestore } from 'firebase-admin/firestore';
 import { HttpsError, onCall } from 'firebase-functions/https';
+import { beforeUserCreated } from 'firebase-functions/identity';
 import { logger } from 'firebase-functions';
 import { defineSecret } from 'firebase-functions/params';
 
+import { ACCESS_DOC, isInvited } from './access';
 import { EdamamError, searchEdamam } from './edamam';
 import type { Food } from './food';
 import { GitHubError, createGitHubIssue, type Issue, type IssueInput } from './github';
@@ -20,6 +22,16 @@ const MAX_TITLE_LENGTH = 200;
 const MAX_DESCRIPTION_LENGTH = 5000;
 
 const inEmulator = () => process.env.FUNCTIONS_EMULATOR === 'true';
+
+/** Lets only invited emails create an account. Runs before Firebase Auth creates the user. */
+export const checkInvite = beforeUserCreated(async (event) => {
+  const email = event.data?.email;
+  const access = await getFirestore().doc(ACCESS_DOC).get();
+  if (isInvited(email, access.get('emails'))) return;
+
+  logger.warn('Sign-up rejected: not invited', { email });
+  throw new HttpsError('permission-denied', 'This account is not invited.');
+});
 
 /** Searches foods by name and saves new ones to `foods/{id}`. Only for signed-in users. */
 export const searchFoods = onCall({ secrets: [EDAMAM_APP_ID, EDAMAM_APP_KEY] }, async (request): Promise<Food[]> => {

@@ -1,3 +1,4 @@
+import { FirebaseError } from 'firebase/app';
 import {
   GoogleAuthProvider,
   onAuthStateChanged,
@@ -16,7 +17,16 @@ export interface Account {
 }
 
 export async function signInWithGoogle(): Promise<void> {
-  await signInWithPopup(auth, new GoogleAuthProvider());
+  try {
+    await signInWithPopup(auth, new GoogleAuthProvider());
+  } catch (e) {
+    // The checkInvite function rejected a new account. The SDK reports that as internal-error,
+    // with the server status in the message.
+    if (e instanceof FirebaseError && e.code === 'auth/internal-error' && e.message.includes('PERMISSION_DENIED')) {
+      throw new Error('This account is not invited. Ask the owner of Sano to add your email.');
+    }
+    throw e;
+  }
 }
 
 export async function signOut(): Promise<void> {

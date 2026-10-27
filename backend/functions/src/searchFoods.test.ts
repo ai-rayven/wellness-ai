@@ -3,11 +3,12 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from '@jest/globals';
 import { initializeTestEnvironment, type RulesTestEnvironment } from '@firebase/rules-unit-testing';
 import { deleteApp, initializeApp, type FirebaseApp } from 'firebase/app';
-import { connectAuthEmulator, getAuth, signInAnonymously, signOut } from 'firebase/auth';
+import { connectAuthEmulator, getAuth, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { connectFunctionsEmulator, getFunctions, httpsCallable } from 'firebase/functions';
 
 import type { Food } from './food';
+import { INVITED_EMAIL, invite, signInWithGoogle } from './testing';
 
 const PROJECT_ID = 'demo-sano';
 
@@ -23,7 +24,8 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   await env.clearFirestore();
-  await signInAnonymously(getAuth(app));
+  await invite(env, [INVITED_EMAIL]);
+  await signInWithGoogle(app, INVITED_EMAIL);
 });
 
 afterAll(async () => {

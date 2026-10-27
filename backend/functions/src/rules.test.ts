@@ -81,4 +81,9 @@ describe('other paths', () => {
     await assertFails(setDoc(doc(alice(), 'users/alice/other/x'), { a: 1 }));
     await assertFails(setDoc(doc(alice(), 'other/x'), { a: 1 }));
   });
+
+  it('include the invite list, which only the functions read', async () => {
+    await assertFails(getDoc(doc(alice(), 'config/access')));
+    await assertFails(setDoc(doc(alice(), 'config/access'), { emails: ['alice@example.com'] }));
+  });
 });

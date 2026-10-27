@@ -1,7 +1,9 @@
 import { expect, type Page } from '@playwright/test';
 
-/** Signs in through the Auth emulator's Google popup, as a new or an existing account. */
-export async function signInWithGoogle(page: Page, account: 'new' | 'existing') {
+import { INVITED_EMAIL } from './emulators';
+
+/** Signs in through the Auth emulator's Google popup, as a new account with `email` or the first existing account. */
+export async function signInWithGoogle(page: Page, account: 'new' | 'existing', email = INVITED_EMAIL) {
   const popupPromise = page.waitForEvent('popup');
   await page.getByRole('button', { name: 'Continue with Google' }).click();
   const popup = await popupPromise;
@@ -10,6 +12,7 @@ export async function signInWithGoogle(page: Page, account: 'new' | 'existing') 
   if (account === 'new') {
     await popup.getByRole('button', { name: 'Add new account' }).click();
     await popup.getByRole('button', { name: 'Auto-generate user information' }).click();
+    await popup.getByLabel('Email').fill(email);
     await popup.getByRole('button', { name: 'Sign in with Google.com' }).click();
   } else {
     await popup.locator('li').first().click();
