@@ -55,7 +55,7 @@ const ageFrom = (birth) => {
 };
 
 // ---------- Mock Firestore ----------
-const KEY = 'sano-mvp';
+const KEY = 'sano-mvp-2'; // bumped when the stored shape changes
 const empty = () => ({ signedIn: false, user: null, foods: {}, logEntries: [], weights: {} });
 let db;
 try { db = JSON.parse(localStorage.getItem(KEY)) || empty(); } catch { db = empty(); }
@@ -82,7 +82,8 @@ function searchFoods(q) {
 
 function addEntry(food, meal, grams, date) {
   db.logEntries.push({
-    id: 'e' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), date, meal, foodId: food.id, foodName: food.name,
+    id: 'e' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), date, meal, foodId: food.id,
+    food: { name: food.name, brand: food.brand, nutrientsPer100g: food.nutrientsPer100g }, // snapshot
     grams, nutrients: nutrientsFor(food, grams), createdAt: now(),
   });
   save();
@@ -166,7 +167,7 @@ function today() {
       return `<section class="card">
         <div class="card-h"><h2>${cap(meal)}</h2><span class="sub num">${es.length ? sum(es).kcal + ' kcal' : ''}</span></div>
         ${es.map((e) => `<button class="entry" data-act="edit" data-id="${e.id}">
-          <span class="t"><b>${e.foodName}</b><span class="muted small num">${e.grams} g</span></span>
+          <span class="t"><b>${e.food.name}</b><span class="muted small num">${e.grams} g</span></span>
           <span class="num">${e.nutrients.kcal} kcal</span></button>`).join('')}
         <button class="add" data-act="add" data-meal="${meal}">+ Add food</button>
       </section>`;
@@ -348,7 +349,8 @@ const actions = {
   },
   edit(b) {
     const e = db.logEntries.find((x) => x.id === b.dataset.id);
-    ui.sheet = { type: 'food', food: db.foods[e.foodId], grams: e.grams, meal: e.meal, entryId: e.id };
+    // Edits use the entry's snapshot, so later changes to foods/{id} never alter it.
+    ui.sheet = { type: 'food', food: { id: e.foodId, ...e.food }, grams: e.grams, meal: e.meal, entryId: e.id };
   },
   update() {
     const s = ui.sheet, e = db.logEntries.find((x) => x.id === s.entryId);

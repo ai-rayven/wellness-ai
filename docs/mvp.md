@@ -106,7 +106,7 @@ erDiagram
         string date "YYYY-MM-DD"
         string meal "breakfast | lunch | dinner | snack"
         string foodId FK
-        string foodName "copy for display"
+        map food "snapshot: name, brand, nutrientsPer100g"
         number grams
         map nutrients "computed totals"
         timestamp createdAt
@@ -128,7 +128,7 @@ erDiagram
 - `foods` is shared by all users. A food's `metadata` holds where it came from (e.g. `{ source: "edamam", lookupId: "food_abc123" }`), and the document id is built from those two values, so each food is stored once.
 - One unit each, with no conversion: food in grams, body weight in lb.
 - Users store a birth date, not an age, so age never goes stale. The app calculates it.
-- A log entry stores the grams eaten and the computed nutrient totals (`nutrientsPer100g` × grams / 100). A day's view then takes a single query by `date`, and recent foods come from the user's latest log entries.
+- A log entry stores a snapshot of the food (`name`, `brand`, `nutrientsPer100g`) taken when it's logged, the grams eaten and the computed nutrient totals (`nutrientsPer100g` × grams / 100). Edits recalculate from the snapshot, so past entries never change even if `foods/{id}` is updated. `foodId` still links to the shared food for recent foods and re-logging. A day's view then takes a single query by `date`, and recent foods come from the user's latest log entries.
 - A weight's document id is its date, which enforces one entry per day.
 - **Open item:** Edamam's terms limit storing its data. For the MVP we store food details anyway, so past logs stay correct if Edamam changes a food. Confirm the terms (or switch providers) before a wider launch.
 
@@ -163,12 +163,17 @@ classDiagram
         +source
         +lookupId
     }
+    class FoodSnapshot {
+        +name
+        +brand
+        +nutrientsPer100g Nutrients
+    }
     class LogEntry {
         +id
         +date
         +meal MealType
         +foodId
-        +foodName
+        +food FoodSnapshot
         +grams
         +nutrients Nutrients
     }
@@ -208,6 +213,7 @@ classDiagram
     Food *-- Nutrients
     LogEntry *-- Nutrients
     LogEntry --> Food : foodId
+    LogEntry *-- FoodSnapshot
     LogEntry --> MealType
     Food *-- FoodMetadata
     DailySummary o-- LogEntry
