@@ -4,21 +4,21 @@
 
 **Sign in**
 - Google and Apple sign-in through Firebase Auth. Apple sign-in is required on iOS whenever Google is offered.
-- Daily calorie and macro targets are entered by hand in the profile, along with metric or imperial units.
+- Daily calorie and macro targets are entered by hand in the profile.
 
 **Nutrition logging**
 1. Search for a food by name. Results come from the Edamam Food Database API (Basic plan, $14/month after a 30-day trial).
-2. Choose a result, a meal (breakfast, lunch, dinner or snack) and an amount (grams, or ounces in imperial), then log it.
+2. Choose a result, a meal (breakfast, lunch, dinner or snack) and the amount eaten in grams, then log it.
 3. Recently logged foods can be logged again without searching.
 4. The Today view shows entries grouped by meal and totals against targets. Earlier days can be browsed.
 5. Entries can be edited or deleted.
 
 **Weight logging**
-1. Log a weight (kg, or lb in imperial) for a day, at most one per day. Logging again replaces that day's value.
+1. Log a weight in kg for a day, at most one per day. Logging again replaces that day's value.
 2. See a list of entries and a simple trend chart (30 and 90 days).
 3. Entries can be edited or deleted.
 
-**Not in MVP:** custom foods, barcode scanning, label photos, AI coach, recipes, pantry, onboarding quiz, reminders.
+**Not in MVP:** custom foods, serving sizes, imperial units, barcode scanning, label photos, AI coach, recipes, pantry, onboarding quiz, reminders.
 
 ## Firebase components
 
@@ -89,7 +89,6 @@ erDiagram
         string displayName
         string email
         map targets "kcal, proteinG, carbsG, fatG"
-        string units "metric | imperial"
         timestamp createdAt
     }
     foods {
@@ -125,7 +124,7 @@ erDiagram
 | `users/{uid}/weights/{date}` | Owner only |
 
 - `foods` is shared by all users. A food's `metadata` holds where it came from (e.g. `{ source: "edamam", lookupId: "food_abc123" }`), and the document id is built from those two values, so each food is stored once.
-- Amounts are always stored in one unit: food in grams and weight in kg. The app converts to ounces or pounds for display when `units` is `imperial`.
+- One unit everywhere, with no conversion: food in grams, body weight in kg.
 - A log entry stores the grams eaten and the computed nutrient totals (`nutrientsPer100g` × grams / 100). A day's view then takes a single query by `date`, and recent foods come from the user's latest log entries.
 - A weight's document id is its date, which enforces one entry per day.
 - **Open item:** Edamam's terms limit storing its data. For the MVP we store food details anyway, so past logs stay correct if Edamam changes a food. Confirm the terms (or switch providers) before a wider launch.
@@ -146,7 +145,6 @@ classDiagram
         +displayName
         +email
         +targets Nutrients
-        +units UnitSystem
     }
     class Food {
         +id
@@ -171,7 +169,6 @@ classDiagram
     class WeightEntry {
         +date
         +weightKg
-        +display(units) number
     }
     class DailySummary {
         +date
@@ -194,11 +191,6 @@ classDiagram
         dinner
         snack
     }
-    class UnitSystem {
-        <<enumeration>>
-        metric
-        imperial
-    }
 
     User *-- Nutrients : targets
     Food *-- Nutrients
@@ -206,7 +198,6 @@ classDiagram
     LogEntry --> Food : foodId
     LogEntry --> MealType
     Food *-- FoodMetadata
-    User --> UnitSystem
     DailySummary o-- LogEntry
 ```
 
@@ -230,7 +221,6 @@ classDiagram
     class ProfileService {
         +get() User
         +updateTargets(Nutrients)
-        +setUnits(UnitSystem)
     }
     class FoodService {
         +search(name) Food[]
@@ -256,4 +246,4 @@ classDiagram
     WeightService ..> WeightEntry
 ```
 
-Each service is a thin wrapper around the Firebase SDK. `FoodService.search` is the only one that goes through Cloud Functions. Unit conversion (g ↔ oz, kg ↔ lb) happens in the UI, so services only see grams and kg.
+Each service is a thin wrapper around the Firebase SDK. `FoodService.search` is the only one that goes through Cloud Functions.
