@@ -95,20 +95,26 @@ function seed() {
     const w = 183 + i * 0.1 + Math.sin(i * 1.7) * 0.8;
     if (i % 4 !== 2) db.weights[addDays(TODAY, -i)] = { weightLb: r1(w), createdAt: now() };
   }
-  const y = addDays(TODAY, -1);
-  [['Rolled oats', 'breakfast', 60], ['Blueberries', 'breakfast', 80], ['Chicken breast, cooked', 'lunch', 150],
+  const plan = [['Rolled oats', 'breakfast', 60], ['Blueberries', 'breakfast', 80], ['Chicken breast, cooked', 'lunch', 150],
     ['White rice, cooked', 'lunch', 200], ['Salmon, Atlantic, cooked', 'dinner', 140], ['Broccoli, cooked', 'dinner', 120],
-    ['Greek yogurt, plain, nonfat', 'snack', 170]].forEach(([name, meal, g]) => {
-    const f = EDAMAM.find((x) => x.name === name && !x.brand);
-    db.foods[f.id] ||= { ...f, createdAt: now() };
-    addEntry(f, meal, g, y);
-  });
+    ['Greek yogurt, plain, nonfat', 'snack', 170]];
+  for (let i = 6; i >= 1; i--) {
+    plan.forEach(([name, meal, g], k) => {
+      const f = EDAMAM.find((x) => x.name === name && !x.brand);
+      db.foods[f.id] ||= { ...f, createdAt: now() };
+      addEntry(f, meal, Math.round(g * (0.8 + ((i * 7 + k * 3) % 5) / 10)), addDays(TODAY, -i));
+    });
+  }
 }
 
 // ---------- UI state ----------
-const ui = { tab: 'today', day: TODAY, sheet: null, range: 30, weightDate: TODAY, showData: false };
+const ui = { tab: 'dashboard', mode: 'consumed', day: TODAY, sheet: null, range: 30, weightDate: TODAY, showData: false };
 const el = document.getElementById('mvp');
 const layer = document.getElementById('sheet');
+
+const mealNow = () => { const h = new Date().getHours(); return h < 11 ? 'breakfast' : h < 15 ? 'lunch' : h < 21 ? 'dinner' : 'snack'; };
+const weekStart = (d) => addDays(d, -((parse(d).getDay() + 6) % 7)); // Monday
+const dayTotals = (d) => sum(db.logEntries.filter((e) => e.date === d));
 
 // ---------- Screens ----------
 function signIn() {
@@ -146,11 +152,62 @@ function setup() {
   </section>`;
 }
 
+// Dashboard: week grid (calories + macros per day), then insight cards. Layout borrowed from MacroFactor.
+const METRICS = [
+  { key: 'kcal', label: '', color: 'var(--sun)' },
+  { key: 'proteinG', label: 'P', color: 'var(--protein)' },
+  { key: 'fatG', label: 'F', color: 'var(--fat)' },
+  { key: 'carbsG', label: 'C', color: 'var(--carbs)' },
+];
+function spark(vals, color) {
+  if (vals.length < 2) return `<p class="muted small">Not enough data yet.</p>`;
+  const W = 140, H = 44, pad = 5, lo = Math.min(...vals), hi = Math.max(...vals) || 1;
+  const x = (i) => pad + (i / (vals.length - 1)) * (W - 2 * pad);
+  const y = (v) => pad + (1 - (v - lo) / (hi - lo || 1)) * (H - 2 * pad);
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" aria-hidden="true">
+    <path d="${vals.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join('')}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>
+    ${vals.map((v, i) => `<circle cx="${x(i)}" cy="${y(v)}" r="3" fill="var(--card)" stroke="${color}" stroke-width="2"/>`).join('')}</svg>`;
+}
+function dashboard() {
+  const t = db.user.targets, start = weekStart(ui.day);
+  const days = [...Array(7)].map((_, i) => addDays(start, i));
+  const sel = days.indexOf(ui.day), tot = dayTotals(ui.day);
+  const cells = METRICS.map((m, r) => days.map((d, c) => {
+    const pct = Math.min(100, (dayTotals(d)[m.key] / t[m.key]) * 100 || 0);
+    return `<button class="wk-cell" style="grid-row:${r + 1};grid-column:${c + 1}" data-act="pickday" data-d="${d}" ${d > TODAY ? 'disabled' : ''} aria-label="${fmtDay(d)}"><span style="height:${pct}%;background:${m.color}"></span></button>`;
+  }).join('') + (() => {
+    const v = Math.round(tot[m.key]), left = t[m.key] - v;
+    const big = ui.mode === 'consumed' ? v : Math.abs(left);
+    const small = ui.mode === 'consumed' ? `of ${t[m.key]}` : left >= 0 ? 'left' : 'over';
+    return `<div class="wk-stat" style="grid-row:${r + 1}"><b class="num">${big.toLocaleString()}${m.label ? ' ' + m.label : ' <i data-lucide="flame"></i>'}</b><span class="muted small">${small}</span></div>`;
+  })()).join('');
+  const labels = days.map((d, c) => `<button class="wk-day" style="grid-row:5;grid-column:${c + 1}" data-act="pickday" data-d="${d}" ${d > TODAY ? 'disabled' : ''}>${'MTWTFSS'[c]}</button>`).join('');
+
+  const last7 = [...Array(7)].map((_, i) => addDays(TODAY, i - 6));
+  const kcals = last7.map((d) => dayTotals(d).kcal).filter((v) => v > 0);
+  const avg = kcals.length ? Math.round(kcals.reduce((a, b) => a + b, 0) / kcals.length) : 0;
+  const ws = Object.keys(db.weights).sort().slice(-7).map((d) => db.weights[d].weightLb);
+  return `<h1 class="page-h">Dashboard</h1>
+    <section class="card">
+      <div class="card-h"><h2>${ui.day === TODAY ? 'This week' : 'Week of ' + parse(start).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</h2><span class="sub">${fmtDay(ui.day)}</span></div>
+      <div class="wk-grid">${sel >= 0 ? `<div class="wk-sel" style="grid-column:${sel + 1}"></div>` : ''}${cells}${labels}</div>
+      <div class="seg wk-mode">${['consumed', 'remaining'].map((m) => `<button data-act="mode" data-v="${m}" class="${ui.mode === m ? 'on' : ''}">${cap(m)}</button>`).join('')}</div>
+    </section>
+    <div class="card-h" style="margin:8px 0 -4px"><h2 style="font-size:19px">Insights</h2></div>
+    <div class="grid2">
+      <button class="card insight" data-act="tab" data-v="log"><b>Calories</b><span class="muted small">Last 7 days</span>
+        ${spark(kcals, 'var(--sun)')}<span class="insight-f"><span class="num"><b>${avg.toLocaleString()}</b> kcal avg</span><i data-lucide="chevron-right"></i></span></button>
+      <button class="card insight" data-act="tab" data-v="weight"><b>Weight trend</b><span class="muted small">Last 7 entries</span>
+        ${spark(ws, 'var(--brand)')}<span class="insight-f"><span class="num"><b>${ws.length ? ws[ws.length - 1] : '–'}</b> lb</span><i data-lucide="chevron-right"></i></span></button>
+    </div>
+    <button class="searchbar" data-act="search"><i data-lucide="search"></i>Search for a food</button>`;
+}
+
 function today() {
   const entries = db.logEntries.filter((e) => e.date === ui.day);
   const tot = sum(entries), t = db.user.targets;
   const left = t.kcal - tot.kcal;
-  return `<div class="day-nav">
+  return `<h1 class="page-h">Food log</h1><div class="day-nav">
       <button class="icon-btn" data-act="day" data-d="-1" aria-label="Previous day"><i data-lucide="chevron-left"></i></button>
       <b>${fmtDay(ui.day)}</b>
       <button class="icon-btn" data-act="day" data-d="1" aria-label="Next day" ${ui.day >= TODAY ? 'disabled' : ''}><i data-lucide="chevron-right"></i></button>
@@ -198,7 +255,7 @@ function weight() {
   const from = addDays(TODAY, -ui.range + 1);
   const inRange = all.filter((p) => p.date >= from).reverse();
   const existing = db.weights[ui.weightDate];
-  return `<section class="card">
+  return `<h1 class="page-h">Weight</h1><section class="card">
       <div class="card-h"><h2>Log weight</h2></div>
       <div class="grid2">
         <label class="num-in"><span>Date</span><input type="date" max="${TODAY}" value="${ui.weightDate}" data-in="wdate"></label>
@@ -227,7 +284,7 @@ function weight() {
 function profile() {
   draft ||= structuredClone(db.user);
   const dirty = JSON.stringify(draft) !== JSON.stringify(db.user);
-  return `<section class="card">
+  return `<h1 class="page-h">Profile</h1><section class="card">
       <div class="card-h"><h2>Account</h2><span class="sub">${db.user.provider}</span></div>
       <div class="row"><div class="avatar">${db.user.displayName[0]}</div>
         <div style="flex:1"><b>${db.user.displayName}</b><div class="muted small">${db.user.email}</div></div>
@@ -287,6 +344,12 @@ function computed() {
 
 function sheet() {
   const s = ui.sheet;
+  if (s.type === 'plus') {
+    return `<div class="backdrop" data-act="close"></div><div class="plus-sheet">
+      <button class="plus-opt" data-act="plusfood"><i data-lucide="apple"></i><b>Log food</b></button>
+      <button class="plus-opt" data-act="plusweight"><i data-lucide="scale"></i><b>Log weight</b></button>
+      <button class="btn ghost wide" data-act="close">Cancel</button></div>`;
+  }
   if (s.type === 'search') {
     return `<div class="c-full"><div class="c-head"><button class="icon-btn" data-act="close" aria-label="Close"><i data-lucide="x"></i></button><b>Add to ${cap(s.meal)}</b></div>
       <div style="padding:0 16px"><div class="ask"><input id="q" type="search" placeholder="Search foods, e.g. banana" value="${s.q.replace(/"/g, '&quot;')}" data-in="q" autocomplete="off"></div></div>
@@ -311,7 +374,9 @@ function render() {
   const needsSetup = signedIn && !(db.user.sex && db.user.birthDate);
   document.body.classList.toggle('no-tabs', !signedIn || needsSetup);
   document.getElementById('tabs').hidden = !signedIn || needsSetup;
-  el.innerHTML = !signedIn ? signIn() : needsSetup ? setup() : ui.tab === 'today' ? today() : ui.tab === 'weight' ? weight() : profile();
+  const screens = { dashboard, log: today, weight, profile };
+  el.innerHTML = !signedIn ? signIn() : needsSetup ? setup() : screens[ui.tab]();
+  document.body.classList.toggle('has-search', signedIn && !needsSetup && ui.tab === 'dashboard');
   document.querySelectorAll('#tabs a').forEach((a) => a.classList.toggle('on', a.dataset.v === ui.tab));
   layer.hidden = !ui.sheet;
   document.body.classList.toggle('coach-open', !!ui.sheet);
@@ -331,13 +396,19 @@ const actions = {
     }
     draft = null; save();
   },
-  signout() { db.signedIn = false; ui.tab = 'today'; ui.day = TODAY; draft = null; save(); },
+  signout() { db.signedIn = false; ui.tab = 'dashboard'; ui.day = TODAY; draft = null; save(); },
   reset() { if (confirm('Clear all demo data?')) { db = empty(); draft = null; ui.showData = false; save(); } },
   data() { ui.showData = !ui.showData; },
   tab(b) { ui.tab = b.dataset.v; draft = null; scrollTo(0, 0); },
   sex(b) { draft.sex = b.dataset.v; },
   'save-profile'() { db.user = { ...db.user, ...draft }; draft = null; save(); },
   day(b) { ui.day = addDays(ui.day, +b.dataset.d); },
+  pickday(b) { ui.day = b.dataset.d; },
+  mode(b) { ui.mode = b.dataset.v; },
+  plus() { ui.sheet = { type: 'plus' }; },
+  search() { actions.add({ dataset: { meal: mealNow() } }); },
+  plusfood() { actions.search(); },
+  plusweight() { ui.sheet = null; ui.tab = 'weight'; ui.weightDate = TODAY; scrollTo(0, 0); focus('wval'); },
   add(b) { ui.sheet = { type: 'search', meal: b.dataset.meal, q: '', results: [], loading: false }; focus('q'); },
   pick(b) { const s = ui.sheet; ui.sheet = { type: 'food', food: db.foods[b.dataset.id], grams: 100, meal: s.meal, from: s }; focus('grams'); },
   back() { ui.sheet = ui.sheet.from; },

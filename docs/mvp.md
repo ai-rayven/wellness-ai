@@ -6,6 +6,10 @@
 - Google and Apple sign-in through Firebase Auth. Apple sign-in is required on iOS whenever Google is offered.
 - The profile holds sex, birth date and daily calorie and macro targets, all entered by hand.
 
+**Navigation** (layout borrowed from MacroFactor)
+- Tab bar: Dashboard · Food Log · **+** · Weight · Profile. The center **+** opens "Log food" or "Log weight".
+- Dashboard: a week grid of calories, protein, fat and carbs per day against targets, with a Consumed/Remaining toggle for the selected day. Below it are a 7-day calorie average and a weight trend, plus a "Search for a food" bar pinned above the tab bar.
+
 **Nutrition logging**
 1. Search for a food by name. Results come from the Edamam Food Database API (Basic plan, $14/month after a 30-day trial).
 2. Choose a result, a meal (breakfast, lunch, dinner or snack) and the amount eaten in grams, then log it.
