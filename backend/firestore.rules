@@ -1,10 +1,27 @@
 rules_version = '2';
 
-// Deny everything until the per-collection rules are added.
+// Access table in docs/mvp.md. Anything not matched here is denied.
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if false;
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    // Shared foods. Only the searchFoods function writes them (the Admin SDK skips these rules).
+    match /foods/{id} {
+      allow read: if request.auth != null;
+    }
+
+    match /users/{uid} {
+      allow read, write: if isOwner(uid);
+
+      match /logEntries/{id} {
+        allow read, write: if isOwner(uid);
+      }
+
+      match /weights/{date} {
+        allow read, write: if isOwner(uid);
+      }
     }
   }
 }
