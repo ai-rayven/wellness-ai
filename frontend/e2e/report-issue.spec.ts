@@ -8,9 +8,10 @@ test.beforeEach(async () => {
 });
 
 // Without a GitHub token, the emulator answers with a fake issue #1.
-test('a user reports an issue from the Profile tab', async ({ page }) => {
+test('a user reports an issue from the sheet on the Profile tab', async ({ page }) => {
   await signInAndSetUp(page);
   await page.getByRole('tab', { name: 'Profile' }).click();
+  await page.getByRole('button', { name: 'Report an issue' }).click();
 
   const send = page.getByRole('button', { name: 'Send' });
   await expect(send).toBeDisabled();
@@ -19,5 +20,5 @@ test('a user reports an issue from the Profile tab', async ({ page }) => {
   await send.click();
 
   await expect(page.getByText('Issue #1 created. Thank you.')).toBeVisible();
-  await expect(page.getByLabel('Issue title')).toHaveValue('');
+  await expect(page.getByLabel('Issue title')).toHaveCount(0);
 });

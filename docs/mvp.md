@@ -34,7 +34,7 @@ wellness-ai/
 │   │       ├── index.tsx      Dashboard
 │   │       ├── log.tsx        Food Log
 │   │       └── profile.tsx
-│   ├── src/components/        shared UI (cards, week grid, charts, weight sheet)
+│   ├── src/components/        shared UI (cards, week grid, charts, weight and issue sheets)
 │   ├── src/services/          auth, profile, food, log, weight (see App services)
 │   ├── src/lib/               firebase.ts, types.ts, nutrients.ts
 │   ├── src/global.css         Tailwind entry
