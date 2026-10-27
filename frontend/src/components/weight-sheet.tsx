@@ -1,8 +1,9 @@
-import { Trash2, X } from 'lucide-react-native';
+import { Trash2, X, type LucideIcon } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
-import { Modal, Platform, Pressable, Text, View } from 'react-native';
+import { Modal, Pressable, Text, View } from 'react-native';
 
 import { isIsoDate, toIsoDate } from '@/lib/dates';
+import { pressKey, type Key } from '@/lib/keypad';
 import type { IsoDate, WeightEntry } from '@/lib/types';
 import { parseWeightLb } from '@/lib/weight';
 import { removeWeight, setWeight, watchWeights } from '@/services/weight';
@@ -11,7 +12,18 @@ import colors from '../../colors';
 
 import { Button } from './button';
 import { DateField } from './date-field';
-import { NumberField } from './number-field';
+import { NumberPad } from './number-pad';
+
+// Up to 1000 lb (MAX_WEIGHT_LB), stored to 0.1 lb.
+const WEIGHT_LIMITS = { whole: 4, decimals: 1 };
+
+/** The weight as typed. `filled` means it came from the log, and the first key replaces it. */
+interface WeightInput {
+  text: string;
+  filled: boolean;
+}
+
+const EMPTY: WeightInput = { text: '', filled: false };
 
 interface WeightSheetProps {
   uid: string;
@@ -37,16 +49,14 @@ interface WeightFormProps {
 
 function WeightForm({ uid, initialDate, onClose }: WeightFormProps) {
   const today = toIsoDate(new Date());
-  const keyboardInset = useKeyboardInset();
   const [date, setDate] = useState<IsoDate>(initialDate);
   const [existing, setExisting] = useState<WeightEntry | null>(null);
-  const [text, setText] = useState('');
+  const [input, setInput] = useState<WeightInput>(EMPTY);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const weightLb = parseWeightLb(text);
+  const weightLb = parseWeightLb(input.text);
 
-  // Watches the selected day. The first value fills the field if it is still empty,
-  // so a logged day opens ready to change and a fast user keeps what they typed.
+  // Watches the selected day. The first value fills the weight if nothing is typed yet.
   useEffect(() => {
     let first = true;
     return watchWeights(
@@ -55,12 +65,24 @@ function WeightForm({ uid, initialDate, onClose }: WeightFormProps) {
       date,
       ([entry]) => {
         setExisting(entry ?? null);
-        if (first && entry) setText((typed) => typed || String(entry.weightLb));
+        if (first && entry) setInput((typed) => (typed.text ? typed : { text: String(entry.weightLb), filled: true }));
         first = false;
       },
       (e) => setError(e.message),
     );
   }, [uid, date]);
+
+  function press(key: Key) {
+    setInput(({ text, filled }) => ({
+      text: pressKey(filled && key !== 'backspace' ? '' : text, key, WEIGHT_LIMITS),
+      filled: false,
+    }));
+  }
+
+  function pickDate(value: string) {
+    setDate(isIsoDate(value) && value <= today ? value : today);
+    setInput(EMPTY);
+  }
 
   async function run(action: () => Promise<void>) {
     setBusy(true);
@@ -76,13 +98,9 @@ function WeightForm({ uid, initialDate, onClose }: WeightFormProps) {
 
   const save = () => weightLb !== null && run(() => setWeight(uid, { date, weightLb }, today));
   const remove = () => run(() => removeWeight(uid, date));
-  function pickDate(value: string) {
-    setDate(isIsoDate(value) && value <= today ? value : today);
-    setText('');
-  }
 
   return (
-    <View className="flex-1 justify-end" style={{ paddingBottom: keyboardInset }}>
+    <View className="flex-1 justify-end">
       <Pressable accessibilityLabel="Close" className="absolute inset-0 bg-black/30" onPress={onClose} />
       <View className="mx-auto w-full max-w-[480px] gap-4 rounded-t-[22px] bg-bg p-4 pb-8">
         <View className="flex-row items-center gap-3">
@@ -99,9 +117,15 @@ function WeightForm({ uid, initialDate, onClose }: WeightFormProps) {
             <View className="size-10" />
           )}
         </View>
-        <NumberField label="Weight" unit="lb" decimal autoFocus value={text} onChange={setText} />
+        <View className="min-h-14 flex-row items-center rounded-xl border-2 border-accent bg-card px-4">
+          <Text accessibilityLabel="Weight" className={`flex-1 text-2xl ${input.filled ? 'text-text-2' : 'text-ink'}`}>
+            {input.text}
+          </Text>
+          <Text className="text-lg text-text-2">lb</Text>
+        </View>
         <Button label="Save" disabled={weightLb === null || busy} onPress={save} />
         {error && <Text className="text-center text-sm text-carbs">{error}</Text>}
+        <NumberPad onPress={press} />
       </View>
     </View>
   );
@@ -109,7 +133,7 @@ function WeightForm({ uid, initialDate, onClose }: WeightFormProps) {
 
 interface SheetIconProps {
   label: string;
-  icon: typeof X;
+  icon: LucideIcon;
   onPress: () => void;
   disabled?: boolean;
 }
@@ -126,28 +150,4 @@ function SheetIcon({ label, icon: Icon, onPress, disabled = false }: SheetIconPr
       <Icon color={colors.text} size={20} />
     </Pressable>
   );
-}
-
-/**
- * The height of the on-screen keyboard on the web. iOS Safari does not resize the page for the keyboard,
- * so without this the keyboard covers a sheet at the bottom.
- */
-function useKeyboardInset(): number {
-  const [inset, setInset] = useState(0);
-
-  useEffect(() => {
-    if (Platform.OS !== 'web') return;
-    const viewport = window.visualViewport;
-    if (!viewport) return;
-
-    const update = () => setInset(Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop));
-    viewport.addEventListener('resize', update);
-    viewport.addEventListener('scroll', update);
-    return () => {
-      viewport.removeEventListener('resize', update);
-      viewport.removeEventListener('scroll', update);
-    };
-  }, []);
-
-  return inset;
 }

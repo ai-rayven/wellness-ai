@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 import { resetEmulators } from './emulators';
-import { openPlusOption, signInAndSetUp } from './helpers';
+import { openPlusOption, signInAndSetUp, typeOnNumberPad } from './helpers';
 
 test.beforeEach(async () => {
   await resetEmulators();
@@ -18,7 +18,8 @@ test('log weights in the sheet, see the trend, change one and delete one', async
 
   // From the + button, the sheet opens over the Dashboard, on today.
   await openPlusOption(page, 'Log weight');
-  await page.getByLabel('Weight', { exact: true }).fill('183.4');
+  await typeOnNumberPad(page, '183.4');
+  await expect(page.getByLabel('Weight', { exact: true })).toHaveText('183.4');
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByRole('button', { name: 'Weight trend' })).toContainText('183.4');
 
@@ -27,15 +28,16 @@ test('log weights in the sheet, see the trend, change one and delete one', async
   await expect(page.getByText('Log at least two days to see a trend.')).toBeVisible();
   await page.getByRole('button', { name: 'Log weight' }).click();
   await page.getByLabel('Date', { exact: true }).fill(isoDaysAgo(1));
-  await page.getByLabel('Weight', { exact: true }).fill('184');
+  await typeOnNumberPad(page, '184');
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByText('-0.6 lb')).toBeVisible();
   await expect(page.getByLabel('Weight, last 30 days')).toBeVisible();
 
-  // A logged day opens with its weight, and a save replaces it.
+  // A logged day opens with its weight. The first key replaces it, and a save replaces the entry.
   await page.getByRole('button', { name: 'Change Today' }).click();
-  await expect(page.getByLabel('Weight', { exact: true })).toHaveValue('183.4');
-  await page.getByLabel('Weight', { exact: true }).fill('183');
+  await expect(page.getByLabel('Weight', { exact: true })).toHaveText('183.4');
+  await typeOnNumberPad(page, '183');
+  await expect(page.getByLabel('Weight', { exact: true })).toHaveText('183');
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByText('-1 lb')).toBeVisible();
 

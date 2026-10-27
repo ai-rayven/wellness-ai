@@ -53,3 +53,10 @@ export async function swipeUp(page: Page) {
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
   await cdp.detach();
 }
+
+/** Taps the keys of the in-app number pad. */
+export async function typeOnNumberPad(page: Page, number: string) {
+  for (const key of number) {
+    await page.getByRole('button', { name: key === '.' ? 'Decimal point' : key, exact: true }).click();
+  }
+}
