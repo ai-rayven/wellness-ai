@@ -2,15 +2,17 @@
 
 ## Stack
 
-- **App:** Expo (React Native) for iOS and Android, styled with NativeWind (Tailwind for React Native) and using `lucide-react-native` for icons. Built and submitted with EAS.
-- **Backend:** Firebase only: Auth, Cloud Firestore, Cloud Functions and Secret Manager, used through the Firebase JS SDK.
-- **Sign-in:** native Apple (`expo-apple-authentication`) and Google (`@react-native-google-signin/google-signin`) buttons, whose tokens sign the user into Firebase Auth. This needs an Expo development build, because Expo Go can't run these native modules.
+- **App:** Expo (React Native) with NativeWind (Tailwind for React Native) and `lucide-react-native` icons. The MVP ships as a **PWA**: an Expo web build (`npx expo export -p web`) served from Firebase Hosting. The same code becomes the iOS and Android apps later.
+- **Backend:** Firebase only: Hosting, Auth, Cloud Firestore, Cloud Functions and Secret Manager, used through the Firebase JS SDK.
+- **Sign-in:** Firebase Auth's web sign-in with a popup (`signInWithPopup`) for Google and Apple. Apple sign-in needs an Apple Developer account ($99/year) to set up its Services ID. Test the popup early in an iPhone home-screen install, where web sign-in is most likely to break.
 - **Food data:** Edamam Food Database API, called only from Cloud Functions.
+
+**Later, for the App Store:** native Apple and Google sign-in (`expo-apple-authentication`, `@react-native-google-signin/google-signin`) in an Expo development build, in-app account deletion (Apple requires it), and EAS builds and store submission.
 
 ## MVP scope
 
 **Sign in**
-- Google and Apple sign-in through Firebase Auth. Apple sign-in is required on iOS whenever Google is offered.
+- Google and Apple sign-in through Firebase Auth. Offering Apple from the start also covers the App Store rule that apps with Google sign-in must offer Apple too.
 - The profile holds sex, birth date and daily calorie and macro targets, all entered by hand. Targets start at 2200 kcal, 150 g protein, 220 g carbs and 70 g fat.
 
 **Navigation** (layout borrowed from MacroFactor)
@@ -29,7 +31,7 @@
 2. See a list of entries and a simple trend chart (30 and 90 days).
 3. Entries can be edited or deleted.
 
-**Not in MVP:** custom foods, serving sizes, other units, barcode scanning, label photos, AI coach, recipes, pantry, onboarding quiz, reminders.
+**Not in MVP:** App Store and Play Store apps, account deletion, custom foods, serving sizes, other units, barcode scanning, label photos, AI coach, recipes, pantry, onboarding quiz, reminders.
 
 ## Firebase components
 
@@ -44,9 +46,9 @@ flowchart LR
     social(("Google / Apple"))
     edamam(("Edamam<br/>Food Database"))
 
-    app(("Sano App<br/>Expo iOS / Android"))
-
     subgraph fb["Firebase project"]
+        hosting["Hosting<br/>Expo web build (PWA)"]
+        app(("Sano App"))
         auth(("Auth"))
         fn(("Cloud Function<br/>searchFoods"))
         secret["Secret Manager<br/>Edamam app ID + key"]
@@ -58,9 +60,10 @@ flowchart LR
         end
     end
 
-    user -->|"Use"| app
-    app -.->|"Native sign-in"| social
-    app -->|"Sign in with token"| auth
+    user -->|"Open"| hosting
+    hosting -->|"Load"| app
+    app -->|"Sign in (popup)"| auth
+    auth -.->|"OAuth"| social
     app -->|"Read / write<br/>via Security Rules"| fs
     app -->|"Search name"| fn
     secret -.->|"Key"| fn
@@ -73,7 +76,7 @@ flowchart LR
     classDef external fill:#f3f3f3,stroke:#888
     class app,auth,fn service
     class users,foods,logs,weights store
-    class secret artifact
+    class hosting,secret artifact
     class social,edamam external
 ```
 
