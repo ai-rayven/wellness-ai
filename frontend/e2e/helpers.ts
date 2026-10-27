@@ -39,3 +39,17 @@ export async function openPlusOption(page: Page, option: 'Log food' | 'Log weigh
   }).toPass();
   await button.click();
 }
+
+/** Drags a finger up the middle of the screen, as a phone user scrolls down. */
+export async function swipeUp(page: Page) {
+  const { width, height } = page.viewportSize()!;
+  const cdp = await page.context().newCDPSession(page);
+  const x = width / 2;
+  const point = (y: number) => [{ x, y }];
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: point(height * 0.7) });
+  for (let step = 1; step <= 10; step++) {
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: point(height * (0.7 - step * 0.05)) });
+  }
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  await cdp.detach();
+}

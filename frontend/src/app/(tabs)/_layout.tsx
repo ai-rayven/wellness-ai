@@ -35,7 +35,8 @@ export default function TabsLayout() {
 
   return (
     <Tabs className="flex-1 bg-bg">
-      <TabSlot />
+      {/* Its default flexShrink: 0 lets a tab grow past the screen, so the tab's ScrollView cannot scroll. */}
+      <TabSlot style={{ flexShrink: 1, minHeight: 0 }} />
       <TabList
         className="flex-row items-end justify-around border-t border-grid bg-card"
         style={{ paddingBottom: insets.bottom }}
