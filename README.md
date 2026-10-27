@@ -38,3 +38,8 @@ EDAMAM_APP_KEY=...
 ```
 
 For production, store them in Secret Manager with `firebase functions:secrets:set EDAMAM_APP_ID` and `EDAMAM_APP_KEY`.
+
+## GitHub token
+
+`reportIssue` creates the issues that users send from the Profile tab in this repo. In the emulator without a token, it answers with a fake issue #1 and creates nothing.
+For production, create a fine-grained personal access token with access to only this repo and the permission **Issues: Read and write**. Then store it with `firebase functions:secrets:set GITHUB_ISSUES_TOKEN`.

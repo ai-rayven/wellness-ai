@@ -43,7 +43,7 @@ wellness-ai/
 │   └── package.json
 ├── backend/
 │   ├── functions/             Cloud Functions (TypeScript)
-│   │   ├── src/index.ts       searchFoods
+│   │   ├── src/index.ts       searchFoods, reportIssue
 │   │   └── package.json
 │   ├── firestore.rules
 │   └── firestore.indexes.json
