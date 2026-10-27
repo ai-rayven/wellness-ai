@@ -30,7 +30,7 @@ export default function SignIn() {
   return (
     <Screen>
       <View className="items-center gap-3 pt-10">
-        <Image source={require('../../assets/icon.png')} accessibilityIgnoresInvertColors className="size-24" />
+        <Image source={require('../../public/icon.png')} accessibilityIgnoresInvertColors className="size-24" />
         <Text className="text-[34px] font-extrabold text-ink">Sano</Text>
         <Text className="text-base text-text-2">Log what you eat and your weight.</Text>
         <View className="w-full max-w-[340px] pt-2">

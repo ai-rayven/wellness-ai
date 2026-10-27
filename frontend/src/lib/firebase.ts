@@ -13,10 +13,17 @@ const EMULATOR_CONFIG: FirebaseOptions = {
   projectId: 'demo-sano',
 };
 
-function firebaseConfig(): FirebaseOptions {
-  if (useEmulators) return EMULATOR_CONFIG;
-  throw new Error('The Firebase web config of the real project is not set yet. Use scripts/dev.sh for the emulators.');
-}
+// The web app of the sano-331c2 project. Public by design: the Security Rules protect the data.
+const PROJECT_CONFIG: FirebaseOptions = {
+  apiKey: 'AIzaSyAWeG15LCx_h_JoTiPD6yqjTRSlZAjulns',
+  authDomain: 'sano-331c2.firebaseapp.com',
+  projectId: 'sano-331c2',
+  storageBucket: 'sano-331c2.firebasestorage.app',
+  messagingSenderId: '904264513760',
+  appId: '1:904264513760:web:01fb1f62515694add93885',
+};
+
+const firebaseConfig = (): FirebaseOptions => (useEmulators ? EMULATOR_CONFIG : PROJECT_CONFIG);
 
 export const app = initializeApp(firebaseConfig());
 export const auth = getAuth(app);

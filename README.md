@@ -22,6 +22,7 @@ npx --prefix frontend playwright install chromium   # for the E2E tests
 | Command | What it does |
 | --- | --- |
 | `scripts/dev.sh` | Starts the Firebase emulators (offline `demo-sano` project) and Expo web. Ctrl-C stops both. |
+| `scripts/deploy.sh [alias]` | Runs the gate, builds the web app for the real project and deploys Hosting, Functions and the Firestore rules. The alias comes from `.firebaserc` (default `dev`). |
 | `scripts/check.sh` | Typecheck, lint and tests for the frontend and the Cloud Functions. The functions and E2E tests run in the emulators, so stop `dev.sh` first. |
 
 Expo web runs on http://localhost:8081 and the Emulator UI on http://localhost:4000.

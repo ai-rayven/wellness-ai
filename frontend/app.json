@@ -4,12 +4,12 @@
     "slug": "sano",
     "version": "1.0.0",
     "scheme": "sano",
-    "icon": "./assets/icon.png",
+    "icon": "./public/icon.png",
     "userInterfaceStyle": "light",
     "web": {
       "output": "single",
       "bundler": "metro",
-      "favicon": "./assets/icon.png"
+      "favicon": "./public/icon.png"
     },
     "plugins": [
       "expo-router"
