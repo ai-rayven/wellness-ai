@@ -28,3 +28,25 @@ export function ageOn(birthDate: IsoDate, today: IsoDate): number {
   const hadBirthday = today.slice(5) >= birthDate.slice(5);
   return hadBirthday ? years : years - 1;
 }
+
+function parseIsoDate(value: IsoDate): Date {
+  if (!isIsoDate(value)) throw new RangeError(`date must be YYYY-MM-DD, got "${value}"`);
+  const [y, m, d] = value.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+/** The day `days` after `date` (negative for earlier days). */
+export function addDays(date: IsoDate, days: number): IsoDate {
+  if (!Number.isInteger(days)) throw new RangeError('days must be a whole number');
+
+  const result = parseIsoDate(date);
+  result.setDate(result.getDate() + days);
+  return toIsoDate(result);
+}
+
+/** "Today", "Yesterday", or e.g. "Tue, Oct 20". */
+export function formatDay(date: IsoDate, today: IsoDate): string {
+  if (date === today) return 'Today';
+  if (date === addDays(today, -1)) return 'Yesterday';
+  return parseIsoDate(date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}

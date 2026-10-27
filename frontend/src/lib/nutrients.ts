@@ -4,7 +4,18 @@ import type { DailySummary, IsoDate, LogEntry, Nutrients } from './types';
 
 type NutrientKey = keyof Nutrients;
 
-const KEYS: readonly NutrientKey[] = ['kcal', 'proteinG', 'carbsG', 'fatG'];
+/** The nutrients in display order, with their names and units. */
+export const NUTRIENTS: readonly { key: NutrientKey; label: string; unit: string }[] = [
+  { key: 'kcal', label: 'Calories', unit: 'kcal' },
+  { key: 'proteinG', label: 'Protein', unit: 'g' },
+  { key: 'carbsG', label: 'Carbs', unit: 'g' },
+  { key: 'fatG', label: 'Fat', unit: 'g' },
+];
+
+/** Protein, carbs and fat. */
+export const MACROS = NUTRIENTS.slice(1);
+
+const KEYS = NUTRIENTS.map((n) => n.key);
 
 const ZERO_NUTRIENTS: Nutrients = { kcal: 0, proteinG: 0, carbsG: 0, fatG: 0 };
 

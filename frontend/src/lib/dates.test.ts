@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { ageOn, isIsoDate, toIsoDate } from './dates';
+import { addDays, ageOn, formatDay, isIsoDate, toIsoDate } from './dates';
 
 describe('isIsoDate', () => {
   it.each(['2026-10-26', '2024-02-29'])('accepts %p', (value) => {
@@ -35,5 +35,27 @@ describe('ageOn', () => {
   it('rejects a birth date after today and invalid dates', () => {
     expect(() => ageOn('2026-10-27', '2026-10-26')).toThrow('after today');
     expect(() => ageOn('1990-02-30', '2026-10-26')).toThrow(RangeError);
+  });
+});
+
+describe('addDays', () => {
+  it('moves across months and years', () => {
+    expect(addDays('2026-10-31', 1)).toBe('2026-11-01');
+    expect(addDays('2026-01-01', -1)).toBe('2025-12-31');
+  });
+
+  it('rejects a fractional number of days', () => {
+    expect(() => addDays('2026-10-26', 0.5)).toThrow(RangeError);
+  });
+});
+
+describe('formatDay', () => {
+  it('names today and yesterday', () => {
+    expect(formatDay('2026-10-26', '2026-10-26')).toBe('Today');
+    expect(formatDay('2026-10-25', '2026-10-26')).toBe('Yesterday');
+  });
+
+  it('shows other days with weekday, month and day', () => {
+    expect(formatDay('2026-10-20', '2026-10-26')).toBe('Tue, Oct 20');
   });
 });
