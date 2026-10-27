@@ -47,3 +47,13 @@ main .grid2, .c-scroll .grid2 { grid-template-columns: repeat(2, minmax(0, 1fr))
 .label { font-size: 12px; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: .04em; }
 .c-scroll .card { padding: 4px 16px; }
 .data { margin: 12px 0 0; padding: 12px; background: var(--card-2); border-radius: 12px; font-size: 11px; line-height: 1.4; overflow-x: auto; max-height: 420px; }
+
+/* Lucide icons (global svg rule in styles.css makes svgs full width). */
+svg.lucide { width: 20px; height: 20px; display: inline-block; vertical-align: -4px; flex: none; }
+.tabbar svg.lucide { width: 22px; height: 22px; margin: 0 auto; }
+.tabbar a { justify-items: center; }
+.icon-btn { display: grid; place-items: center; }
+.icon-btn svg.lucide { width: 18px; height: 18px; }
+.entry .chip { display: grid; place-items: center; width: 36px; height: 36px; padding: 0; }
+.entry .chip svg.lucide { width: 16px; height: 16px; }
+.add svg.lucide { width: 18px; height: 18px; }

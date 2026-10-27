@@ -116,8 +116,8 @@ function signIn() {
     <div class="signin-mark">${mark({ size: 72 })}</div>
     <h1 class="wordmark">${BRAND.name}</h1>
     <p class="muted">Log what you eat and your weight.</p>
-    <button class="sso apple" data-act="signin" data-p="Apple"> Continue with Apple</button>
-    <button class="sso google" data-act="signin" data-p="Google"><b>G</b> Continue with Google</button>
+    <button class="sso apple" data-act="signin" data-p="Apple">Continue with Apple</button>
+    <button class="sso google" data-act="signin" data-p="Google">Continue with Google</button>
     <p class="muted small">Mock sign-in: no account is created.</p>
   </section>`;
 }
@@ -151,9 +151,9 @@ function today() {
   const tot = sum(entries), t = db.user.targets;
   const left = t.kcal - tot.kcal;
   return `<div class="day-nav">
-      <button class="icon-btn" data-act="day" data-d="-1" aria-label="Previous day">‹</button>
+      <button class="icon-btn" data-act="day" data-d="-1" aria-label="Previous day"><i data-lucide="chevron-left"></i></button>
       <b>${fmtDay(ui.day)}</b>
-      <button class="icon-btn" data-act="day" data-d="1" aria-label="Next day" ${ui.day >= TODAY ? 'disabled' : ''}>›</button>
+      <button class="icon-btn" data-act="day" data-d="1" aria-label="Next day" ${ui.day >= TODAY ? 'disabled' : ''}><i data-lucide="chevron-right"></i></button>
     </div>
     <section class="card">
       <div class="card-h"><h2>Calories</h2><span class="sub num">${left >= 0 ? `${left.toLocaleString()} left` : `${(-left).toLocaleString()} over`}</span></div>
@@ -169,7 +169,7 @@ function today() {
         ${es.map((e) => `<button class="entry" data-act="edit" data-id="${e.id}">
           <span class="t"><b>${e.food.name}</b><span class="muted small num">${e.grams} g</span></span>
           <span class="num">${e.nutrients.kcal} kcal</span></button>`).join('')}
-        <button class="add" data-act="add" data-meal="${meal}">+ Add food</button>
+        <button class="add" data-act="add" data-meal="${meal}"><i data-lucide="plus"></i> Add food</button>
       </section>`;
     }).join('')}`;
 }
@@ -218,8 +218,8 @@ function weight() {
         const prev = all[i + 1], d = prev ? r1(p.weightLb - prev.weightLb) : null;
         return `<div class="entry"><span class="t"><b>${fmtDay(p.date)}</b>${d != null ? `<span class="muted small num">${d > 0 ? '+' : ''}${d} lb</span>` : ''}</span>
           <span class="num">${p.weightLb} lb</span>
-          <button class="chip" data-act="wedit" data-d="${p.date}">Edit</button>
-          <button class="chip" data-act="wdel" data-d="${p.date}" aria-label="Delete">✕</button></div>`;
+          <button class="chip" data-act="wedit" data-d="${p.date}" aria-label="Edit"><i data-lucide="pencil"></i></button>
+          <button class="chip" data-act="wdel" data-d="${p.date}" aria-label="Delete"><i data-lucide="trash-2"></i></button></div>`;
       }).join('') : '<p class="muted">No entries yet.</p>'}
     </section>`;
 }
@@ -261,7 +261,7 @@ function recentFoods() {
     .filter((e) => !seen.has(e.foodId) && seen.add(e.foodId)).slice(0, 6).map((e) => db.foods[e.foodId]);
 }
 const foodRow = (f) => `<button class="entry" data-act="pick" data-id="${f.id}">
-  <span class="t"><b>${f.name}</b><span class="muted small">${f.brand ? f.brand + ' · ' : ''}${f.nutrientsPer100g.kcal} kcal per 100 g</span></span><span class="muted">›</span></button>`;
+  <span class="t"><b>${f.name}</b><span class="muted small">${f.brand ? f.brand + ' · ' : ''}${f.nutrientsPer100g.kcal} kcal per 100 g</span></span><span class="muted"><i data-lucide="chevron-right"></i></span></button>`;
 
 function results() {
   const s = ui.sheet;
@@ -288,13 +288,13 @@ function computed() {
 function sheet() {
   const s = ui.sheet;
   if (s.type === 'search') {
-    return `<div class="c-full"><div class="c-head"><button class="icon-btn" data-act="close" aria-label="Close">✕</button><b>Add to ${cap(s.meal)}</b></div>
+    return `<div class="c-full"><div class="c-head"><button class="icon-btn" data-act="close" aria-label="Close"><i data-lucide="x"></i></button><b>Add to ${cap(s.meal)}</b></div>
       <div style="padding:0 16px"><div class="ask"><input id="q" type="search" placeholder="Search foods, e.g. banana" value="${s.q.replace(/"/g, '&quot;')}" data-in="q" autocomplete="off"></div></div>
       <div class="c-scroll" id="results">${results()}</div></div>`;
   }
   const f = s.food, n = f.nutrientsPer100g, editing = !!s.entryId;
   return `<div class="c-full"><div class="c-head">
-      <button class="icon-btn" data-act="${editing ? 'close' : 'back'}" aria-label="Back">${editing ? '✕' : '‹'}</button><b>${editing ? 'Edit entry' : 'Add food'}</b></div>
+      <button class="icon-btn" data-act="${editing ? 'close' : 'back'}" aria-label="Back">${editing ? '<i data-lucide="x"></i>' : '<i data-lucide="chevron-left"></i>'}</button><b>${editing ? 'Edit entry' : 'Add food'}</b></div>
     <div class="c-scroll">
       <div><h2 style="margin:0">${f.name}</h2><div class="muted small">${f.brand ? f.brand + ' · ' : ''}per 100 g: ${n.kcal} kcal · P ${n.proteinG} · C ${n.carbsG} · F ${n.fatG}</div></div>
       <label class="num-in big-in"><span>Amount</span><input id="grams" type="number" inputmode="decimal" min="0" value="${s.grams}" data-in="grams"><i>g</i></label>
@@ -316,6 +316,7 @@ function render() {
   layer.hidden = !ui.sheet;
   document.body.classList.toggle('coach-open', !!ui.sheet);
   layer.innerHTML = ui.sheet ? sheet() : '';
+  window.lucide?.createIcons();
 }
 // After the next render.
 const focus = (id) => setTimeout(() => { const i = document.getElementById(id); if (i) { i.focus(); i.select?.(); } });
@@ -378,16 +379,17 @@ document.addEventListener('click', (e) => {
 });
 
 // Inputs update state without a full re-render so focus stays put.
+const showResults = () => { document.getElementById('results').innerHTML = results(); window.lucide?.createIcons(); };
 let searchTimer;
 document.addEventListener('input', (e) => {
   const t = e.target, k = t.dataset.in;
   if (k === 'q') {
     const s = ui.sheet; s.q = t.value; s.loading = !!s.q.trim();
-    document.getElementById('results').innerHTML = results();
+    showResults();
     clearTimeout(searchTimer);
     if (s.loading) searchTimer = setTimeout(async () => {
       const q = s.q, hits = await searchFoods(q);
-      if (ui.sheet === s && s.q === q) { s.results = hits; s.loading = false; document.getElementById('results').innerHTML = results(); }
+      if (ui.sheet === s && s.q === q) { s.results = hits; s.loading = false; showResults(); }
     }, 250);
   } else if (k === 'grams') {
     ui.sheet.grams = t.value;
