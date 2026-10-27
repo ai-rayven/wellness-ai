@@ -8,11 +8,12 @@ import { Screen } from '@/components/screen';
 import { Segmented } from '@/components/segmented';
 import { Sparkline } from '@/components/sparkline';
 import { addDays, daysFrom, formatDay, toIsoDate, weekStart } from '@/lib/dates';
-import { averageKcal, remainingNutrients, totalsByDay } from '@/lib/nutrients';
+import { NUTRIENTS, averageKcal, remainingNutrients, totalsByDay } from '@/lib/nutrients';
 import type { IsoDate, LogEntry, Nutrients, WeightEntry } from '@/lib/types';
 import { watchRange } from '@/services/log';
 import { useSessionWith } from '@/services/session';
-import { watchLatestWeights } from '@/services/weight';
+import { WEIGHT_HISTORY_DAYS } from '@/lib/weight';
+import { watchWeights } from '@/services/weight';
 
 import colors from '../../../colors';
 
@@ -50,7 +51,8 @@ export default function Dashboard() {
     if (!uid) return;
     const onError = (e: Error) => setError(e.message);
     const stopEntries = watchRange(uid, from, today, setEntries, onError);
-    const stopWeights = watchLatestWeights(uid, WEIGHT_POINTS, setWeights, onError);
+    // An ascending range on the document id needs no index. A descending one (for "latest N") does.
+    const stopWeights = watchWeights(uid, addDays(today, -WEIGHT_HISTORY_DAYS + 1), today, setWeights, onError);
     return () => {
       stopEntries();
       stopWeights();
@@ -64,7 +66,8 @@ export default function Dashboard() {
   const dayTotals = totals.get(selected)!;
   const left = remainingNutrients(dayTotals, targets);
   const recentKcal = lastSeven.map((d) => totals.get(d)!.kcal).filter((kcal) => kcal > 0);
-  const latestWeight = weights.at(-1);
+  const recentWeights = weights.slice(-WEIGHT_POINTS);
+  const latestWeight = recentWeights.at(-1);
 
   return (
     <Screen inTabs>
@@ -108,8 +111,14 @@ export default function Dashboard() {
               const remaining = Math.round(left[row.key]);
               const big = mode === 'consumed' ? consumed : Math.abs(remaining);
               const small = mode === 'consumed' ? `of ${targets[row.key]}` : remaining >= 0 ? 'left' : 'over';
+              const name = NUTRIENTS.find((n) => n.key === row.key)?.label;
               return (
-                <View key={row.key} className="h-14 justify-center">
+                <View
+                  key={row.key}
+                  accessible
+                  accessibilityLabel={`${name}: ${big.toLocaleString('en-US')} ${small}`}
+                  className="h-14 justify-center"
+                >
                   <View className="flex-row items-center gap-1">
                     <Text className="text-lg font-bold text-ink">
                       {big.toLocaleString('en-US')}
@@ -143,7 +152,7 @@ export default function Dashboard() {
           title="Weight trend"
           subtitle={`Last ${WEIGHT_POINTS} entries`}
           onPress={() => router.push('/weight')}
-          chart={<Sparkline values={weights.map((w) => w.weightLb)} color={colors.brand} label="Weight, last entries" />}
+          chart={<Sparkline values={recentWeights.map((w) => w.weightLb)} color={colors.brand} label="Weight, last entries" />}
           value={latestWeight ? String(latestWeight.weightLb) : '–'}
           unit="lb"
         />

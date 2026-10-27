@@ -13,14 +13,12 @@ import { Segmented } from '@/components/segmented';
 import { WeightChart } from '@/components/weight-chart';
 import { addDays, formatDay, isIsoDate, toIsoDate } from '@/lib/dates';
 import type { IsoDate, WeightEntry } from '@/lib/types';
-import { parseWeightLb, withChanges } from '@/lib/weight';
+import { WEIGHT_HISTORY_DAYS, parseWeightLb, withChanges } from '@/lib/weight';
 import { removeWeight, setWeight, watchWeights } from '@/services/weight';
 import { useSessionWith } from '@/services/session';
 
 import colors from '../../colors';
 
-/** The list and the longest chart range. */
-const HISTORY_DAYS = 90;
 const RANGES = [
   { value: '30', label: '30d' },
   { value: '90', label: '90d' },
@@ -42,7 +40,7 @@ export default function Weight() {
 
   useEffect(() => {
     if (!uid) return;
-    return watchWeights(uid, addDays(today, -HISTORY_DAYS + 1), today, setEntries, (e) => setLoadError(e.message));
+    return watchWeights(uid, addDays(today, -WEIGHT_HISTORY_DAYS + 1), today, setEntries, (e) => setLoadError(e.message));
   }, [uid, today]);
 
   if (!session) return null;

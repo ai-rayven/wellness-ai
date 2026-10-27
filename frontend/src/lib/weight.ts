@@ -3,6 +3,9 @@ import type { WeightEntry } from './types';
 export const MIN_WEIGHT_LB = 50;
 export const MAX_WEIGHT_LB = 1000;
 
+/** Days of weights the app reads: the Weight list, the longest chart range and the Dashboard card. */
+export const WEIGHT_HISTORY_DAYS = 90;
+
 /** The weight to store, rounded to 0.1 lb, or null when it is out of range. */
 export function parseWeightLb(text: string): number | null {
   const value = Number(text);

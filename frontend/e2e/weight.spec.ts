@@ -21,20 +21,25 @@ test('log weights for two days, see the trend and delete one', async ({ page }) 
   await page.getByLabel('Date', { exact: true }).fill(isoDaysAgo(1));
   await page.getByLabel('Weight', { exact: true }).fill('184');
   await page.getByRole('button', { name: 'Save' }).click();
-  await expect(page.getByText('184 lb', { exact: true })).toBeVisible();
+  await expect(page.getByText('184 lb', { exact: true }).filter({ visible: true })).toBeVisible();
 
   await page.getByLabel('Date', { exact: true }).fill(isoDaysAgo(0));
   await page.getByLabel('Weight', { exact: true }).fill('183.4');
   await page.getByRole('button', { name: 'Save' }).click();
-  await expect(page.getByText('183.4 lb', { exact: true })).toBeVisible();
+  await expect(page.getByText('183.4 lb', { exact: true }).filter({ visible: true })).toBeVisible();
   await expect(page.getByText('-0.6 lb')).toBeVisible();
   await expect(page.getByLabel('Weight, last 30 days')).toBeVisible();
+
+  // The Dashboard card shows the latest weight. Its query must not need an index (it once did).
+  await page.getByRole('button', { name: 'Back' }).click();
+  await expect(page.getByRole('button', { name: 'Weight trend' })).toContainText('183.4');
+  await page.getByRole('button', { name: 'Weight trend' }).click();
 
   // A second save for the same day replaces it.
   await page.getByRole('button', { name: 'Edit Today' }).click();
   await expect(page.getByText('Replaces 183.4 lb already logged for Today.')).toBeVisible();
 
   await page.getByRole('button', { name: 'Delete Yesterday' }).click();
-  await expect(page.getByText('184 lb', { exact: true })).toHaveCount(0);
+  await expect(page.getByText('184 lb', { exact: true }).filter({ visible: true })).toHaveCount(0);
   await expect(page.getByText('Log at least two days to see a trend.')).toBeVisible();
 });
