@@ -16,10 +16,7 @@ const EMULATOR_CONFIG: FirebaseOptions = {
 // The web app of the sano-331c2 project. Public by design: the Security Rules protect the data.
 const PROJECT_CONFIG: FirebaseOptions = {
   apiKey: 'AIzaSyAWeG15LCx_h_JoTiPD6yqjTRSlZAjulns',
-  // The Hosting domain, not firebaseapp.com: with the sign-in handler on the app's own domain, browsers that
-  // partition third-party storage still pass the popup result back. Needs this redirect URI in the OAuth client:
-  // https://sano-331c2.web.app/__/auth/handler
-  authDomain: 'sano-331c2.web.app',
+  authDomain: 'sano-331c2.firebaseapp.com',
   projectId: 'sano-331c2',
   storageBucket: 'sano-331c2.firebasestorage.app',
   messagingSenderId: '904264513760',
