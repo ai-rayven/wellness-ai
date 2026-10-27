@@ -6,8 +6,11 @@ import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PlusSheet } from '@/components/plus-sheet';
+import { WeightSheet } from '@/components/weight-sheet';
 import { toIsoDate } from '@/lib/dates';
 import { mealAt } from '@/lib/meals';
+import type { IsoDate } from '@/lib/types';
+import { useSessionWith } from '@/services/session';
 
 import colors from '../../../colors';
 
@@ -15,7 +18,9 @@ import colors from '../../../colors';
 export default function TabsLayout() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const session = useSessionWith('ready');
   const [plusOpen, setPlusOpen] = useState(false);
+  const [weightDate, setWeightDate] = useState<IsoDate | null>(null);
 
   function logFood() {
     const now = new Date();
@@ -25,7 +30,7 @@ export default function TabsLayout() {
 
   function logWeight() {
     setPlusOpen(false);
-    router.push('/weight');
+    setWeightDate(toIsoDate(new Date()));
   }
 
   return (
@@ -58,6 +63,7 @@ export default function TabsLayout() {
         </TabTrigger>
       </TabList>
       <PlusSheet visible={plusOpen} onLogFood={logFood} onLogWeight={logWeight} onClose={() => setPlusOpen(false)} />
+      {session && <WeightSheet uid={session.account.uid} date={weightDate} onClose={() => setWeightDate(null)} />}
     </Tabs>
   );
 }

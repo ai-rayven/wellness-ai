@@ -30,5 +30,5 @@ test('the Dashboard follows the log and the targets from Profile', async ({ page
   await expect(page.getByLabel('Calories: 1,911 left')).toBeVisible();
 
   await page.getByRole('button', { name: 'Weight trend' }).click();
-  await expect(page.getByText('Log weight')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Log weight' })).toBeVisible();
 });

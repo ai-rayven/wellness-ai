@@ -25,7 +25,7 @@ wellness-ai/
 │   │   ├── _layout.tsx        sends users to sign-in → setup → tabs
 │   │   ├── sign-in.tsx
 │   │   ├── setup.tsx          sex, birth date, targets
-│   │   ├── weight.tsx         opened from + and the Dashboard card
+│   │   ├── weight.tsx         trend and entries, opened from the Dashboard card
 │   │   ├── food/
 │   │   │   ├── search.tsx     search + recent foods
 │   │   │   └── [id].tsx       grams, meal, log/edit/delete
@@ -34,7 +34,7 @@ wellness-ai/
 │   │       ├── index.tsx      Dashboard
 │   │       ├── log.tsx        Food Log
 │   │       └── profile.tsx
-│   ├── src/components/        shared UI (cards, week grid, charts)
+│   ├── src/components/        shared UI (cards, week grid, charts, weight sheet)
 │   ├── src/services/          auth, profile, food, log, weight (see App services)
 │   ├── src/lib/               firebase.ts, types.ts, nutrients.ts
 │   ├── src/global.css         Tailwind entry
