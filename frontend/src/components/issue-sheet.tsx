@@ -2,17 +2,19 @@ import { X } from 'lucide-react-native';
 import { useState } from 'react';
 import { Modal, Pressable, Text, TextInput, View } from 'react-native';
 
-import { reportIssue, type Issue } from '@/services/issues';
+import { MAX_SCREENSHOTS, reportIssue, type Issue } from '@/services/issues';
 
 import colors from '../../colors';
 
 import { Button } from './button';
+import { ScreenshotPicker, type Screenshot } from './screenshot-picker';
 
 // The same limits as the reportIssue function.
 const MAX_TITLE_LENGTH = 200;
 const MAX_DESCRIPTION_LENGTH = 5000;
 
 interface IssueSheetProps {
+  uid: string;
   visible: boolean;
   onClose: () => void;
   onSent: (issue: Issue) => void;
@@ -22,17 +24,18 @@ interface IssueSheetProps {
  * A tall sheet to report an issue, with Send at the bottom in reach of the thumb. The phone keyboard
  * covers Send while it is open, so the fields are at the top and the keyboard is not opened at the start.
  */
-export function IssueSheet({ visible, onClose, onSent }: IssueSheetProps) {
+export function IssueSheet({ uid, visible, onClose, onSent }: IssueSheetProps) {
   return (
     <Modal transparent animationType="slide" visible={visible} onRequestClose={onClose}>
-      {visible && <IssueForm onClose={onClose} onSent={onSent} />}
+      {visible && <IssueForm uid={uid} onClose={onClose} onSent={onSent} />}
     </Modal>
   );
 }
 
-function IssueForm({ onClose, onSent }: Omit<IssueSheetProps, 'visible'>) {
+function IssueForm({ uid, onClose, onSent }: Omit<IssueSheetProps, 'visible'>) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [screenshots, setScreenshots] = useState<Screenshot[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,7 +44,7 @@ function IssueForm({ onClose, onSent }: Omit<IssueSheetProps, 'visible'>) {
     setBusy(true);
     setError(null);
     try {
-      onSent(await reportIssue({ title, description }));
+      onSent(await reportIssue(uid, { title, description, screenshots: screenshots.map((s) => s.file) }));
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
       setBusy(false);
@@ -84,8 +87,10 @@ function IssueForm({ onClose, onSent }: Omit<IssueSheetProps, 'visible'>) {
           className="flex-1 rounded-xl bg-card-2 px-3 py-3 text-base text-text"
           style={{ textAlignVertical: 'top' }}
         />
+        <ScreenshotPicker screenshots={screenshots} max={MAX_SCREENSHOTS} onChange={setScreenshots} />
+        <Text className="text-center text-xs text-text-2">Issues are public on GitHub, with their screenshots.</Text>
         {error && <Text className="text-center text-sm text-carbs">{error}</Text>}
-        <Button label="Send" disabled={!title.trim() || busy} onPress={send} />
+        <Button label={busy ? 'Sending…' : 'Send'} disabled={!title.trim() || busy} onPress={send} />
       </View>
     </View>
   );

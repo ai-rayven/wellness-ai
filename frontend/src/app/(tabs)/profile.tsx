@@ -42,7 +42,7 @@ export default function Profile() {
       {/* Keyed by the saved profile, so the form starts again from it after each save. */}
       <ProfileCard key={JSON.stringify([user.sex, user.birthDate, user.targets])} user={user} />
 
-      <ReportIssue />
+      <ReportIssue uid={user.id} />
     </Screen>
   );
 }
@@ -83,7 +83,7 @@ function ProfileCard({ user }: { user: User }) {
 }
 
 /** Opens the issue sheet, and shows the number of the last issue sent. */
-function ReportIssue() {
+function ReportIssue({ uid }: { uid: string }) {
   const [open, setOpen] = useState(false);
   const [sent, setSent] = useState<Issue | null>(null);
 
@@ -96,7 +96,7 @@ function ReportIssue() {
     <View className="gap-2">
       <Button label="Report an issue" variant="outline" onPress={() => setOpen(true)} />
       {sent && <Text className="text-center text-sm text-text-2">Issue #{sent.number} created. Thank you.</Text>}
-      <IssueSheet visible={open} onClose={() => setOpen(false)} onSent={onSent} />
+      <IssueSheet uid={uid} visible={open} onClose={() => setOpen(false)} onSent={onSent} />
     </View>
   );
 }
