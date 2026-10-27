@@ -4,6 +4,7 @@ import {
   deleteDoc,
   doc,
   documentId,
+  limit,
   onSnapshot,
   orderBy,
   query,
@@ -61,6 +62,24 @@ export function watchWeights(
   return onSnapshot(
     range,
     (snapshot) => onChange(snapshot.docs.map((d) => ({ date: d.id, weightLb: d.get('weightLb') }))),
+    onError,
+  );
+}
+
+/** Calls `onChange` with the latest `count` entries, oldest first. */
+export function watchLatestWeights(
+  uid: string,
+  count: number,
+  onChange: (entries: WeightEntry[]) => void,
+  onError: (error: Error) => void,
+): Unsubscribe {
+  if (!uid) throw new RangeError('uid must not be empty');
+  if (!Number.isInteger(count) || count <= 0) throw new RangeError('count must be a positive whole number');
+
+  const latest = query(weights(uid), orderBy(documentId(), 'desc'), limit(count));
+  return onSnapshot(
+    latest,
+    (snapshot) => onChange(snapshot.docs.map((d) => ({ date: d.id, weightLb: d.get('weightLb') })).reverse()),
     onError,
   );
 }

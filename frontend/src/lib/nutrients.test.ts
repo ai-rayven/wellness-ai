@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
-import { nutrientsForGrams, remainingNutrients, sumNutrients, summarizeDay } from './nutrients';
+import { averageKcal, nutrientsForGrams, remainingNutrients, sumNutrients, summarizeDay, totalsByDay } from './nutrients';
 import type { LogEntry, Nutrients } from './types';
 
 // Per-100 g values from the mock Edamam data in docs/mvp.js.
@@ -83,5 +83,23 @@ describe('summarizeDay', () => {
 
   it.each(['2026-02-30', '26-10-26', '2026-1-5', ''])('rejects the date %p', (date) => {
     expect(() => summarizeDay(date, [])).toThrow(RangeError);
+  });
+});
+
+describe('totalsByDay', () => {
+  it('totals each day and gives zero for days without entries', () => {
+    const entries = [entry('a', '2026-10-26', OATS), entry('b', '2026-10-26', CHICKEN), entry('c', '2026-10-20', OATS)];
+    const totals = totalsByDay(['2026-10-25', '2026-10-26'], entries);
+    expect([...totals.keys()]).toEqual(['2026-10-25', '2026-10-26']);
+    expect(totals.get('2026-10-25')?.kcal).toBe(0);
+    expect(totals.get('2026-10-26')?.kcal).toBe(544);
+  });
+});
+
+describe('averageKcal', () => {
+  it('skips days without calories', () => {
+    const day = (kcal: number) => ({ kcal, proteinG: 0, carbsG: 0, fatG: 0 });
+    expect(averageKcal([day(2000), day(0), day(1501)])).toBe(1751);
+    expect(averageKcal([day(0)])).toBe(0);
   });
 });

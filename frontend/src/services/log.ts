@@ -115,6 +115,26 @@ export function watchDay(
   );
 }
 
+/** Calls `onChange` with the entries from `from` to `to` (both included), for the Dashboard. */
+export function watchRange(
+  uid: string,
+  from: IsoDate,
+  to: IsoDate,
+  onChange: (entries: LogEntry[]) => void,
+  onError: (error: Error) => void,
+): Unsubscribe {
+  assertUid(uid);
+  if (!isIsoDate(from) || !isIsoDate(to)) throw new RangeError('from and to must be YYYY-MM-DD');
+  if (from > to) throw new RangeError('from is after to');
+
+  // A range on one field needs no composite index.
+  return onSnapshot(
+    query(entries(uid), where('date', '>=', from), where('date', '<=', to)),
+    (snapshot) => onChange(snapshot.docs.map(toEntry).filter((e): e is LogEntry => e !== null)),
+    onError,
+  );
+}
+
 /** Distinct foods from the latest entries, newest first. */
 export async function recentFoods(uid: string, count: number): Promise<RecentFood[]> {
   assertUid(uid);

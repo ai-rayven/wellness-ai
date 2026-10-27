@@ -1,5 +1,13 @@
 // users/{uid}: the profile document. Conversion to and from Firestore stays in this file.
-import { doc, onSnapshot, serverTimestamp, setDoc, type DocumentSnapshot, type Unsubscribe } from 'firebase/firestore';
+import {
+  doc,
+  onSnapshot,
+  serverTimestamp,
+  setDoc,
+  updateDoc,
+  type DocumentSnapshot,
+  type Unsubscribe,
+} from 'firebase/firestore';
 
 import { db } from '@/lib/firebase';
 import { profileInputError, type ProfileInput } from '@/lib/profile';
@@ -34,6 +42,15 @@ export async function createProfile(account: Account, input: ProfileInput, today
     targets: input.targets,
     createdAt: serverTimestamp(),
   });
+}
+
+/** Saves changes from the Profile tab. */
+export async function updateProfile(uid: string, input: ProfileInput, today: IsoDate): Promise<void> {
+  if (!uid) throw new RangeError('uid must not be empty');
+  const error = profileInputError(input, today);
+  if (error) throw new RangeError(error);
+
+  await updateDoc(userRef(uid), { sex: input.sex, birthDate: input.birthDate, targets: input.targets });
 }
 
 function toUser(snapshot: DocumentSnapshot): User | null {

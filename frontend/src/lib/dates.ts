@@ -50,3 +50,16 @@ export function formatDay(date: IsoDate, today: IsoDate): string {
   if (date === addDays(today, -1)) return 'Yesterday';
   return parseIsoDate(date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 }
+
+/** The Monday of the week that contains `date`. */
+export function weekStart(date: IsoDate): IsoDate {
+  const weekday = (parseIsoDate(date).getDay() + 6) % 7; // Monday = 0
+  return addDays(date, -weekday);
+}
+
+/** `count` days from `first`, in order. */
+export function daysFrom(first: IsoDate, count: number): IsoDate[] {
+  if (!Number.isInteger(count) || count < 0) throw new RangeError('count must be a whole number, 0 or more');
+
+  return Array.from({ length: count }, (_, i) => addDays(first, i));
+}

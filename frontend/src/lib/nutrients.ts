@@ -68,3 +68,17 @@ export function summarizeDay(date: IsoDate, entries: readonly LogEntry[]): Daily
     totals: sumNutrients(entries.map((e) => e.nutrients)),
   };
 }
+
+/** Totals for each of `dates`, from entries of any days. Days without entries are zero. */
+export function totalsByDay(dates: readonly IsoDate[], entries: readonly LogEntry[]): Map<IsoDate, Nutrients> {
+  const byDay = new Map<IsoDate, LogEntry[]>(dates.map((d) => [d, []]));
+  for (const entry of entries) byDay.get(entry.date)?.push(entry);
+  return new Map([...byDay].map(([date, list]) => [date, summarizeDay(date, list).totals]));
+}
+
+/** The average calories of the days that have any, or 0 when none have. */
+export function averageKcal(totals: Iterable<Nutrients>): number {
+  const logged = [...totals].map((n) => n.kcal).filter((kcal) => kcal > 0);
+  if (logged.length === 0) return 0;
+  return Math.round(logged.reduce((a, b) => a + b, 0) / logged.length);
+}

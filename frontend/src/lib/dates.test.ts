@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { addDays, ageOn, formatDay, isIsoDate, toIsoDate } from './dates';
+import { addDays, ageOn, daysFrom, formatDay, isIsoDate, toIsoDate, weekStart } from './dates';
 
 describe('isIsoDate', () => {
   it.each(['2026-10-26', '2024-02-29'])('accepts %p', (value) => {
@@ -57,5 +57,20 @@ describe('formatDay', () => {
 
   it('shows other days with weekday, month and day', () => {
     expect(formatDay('2026-10-20', '2026-10-26')).toBe('Tue, Oct 20');
+  });
+});
+
+describe('weekStart', () => {
+  it('is the Monday of the week', () => {
+    expect(weekStart('2026-10-26')).toBe('2026-10-26'); // Monday
+    expect(weekStart('2026-11-01')).toBe('2026-10-26'); // Sunday
+    expect(weekStart('2026-10-28')).toBe('2026-10-26');
+  });
+});
+
+describe('daysFrom', () => {
+  it('lists the days in order', () => {
+    expect(daysFrom('2026-10-30', 3)).toEqual(['2026-10-30', '2026-10-31', '2026-11-01']);
+    expect(daysFrom('2026-10-30', 0)).toEqual([]);
   });
 });
