@@ -1,0 +1,16 @@
+node_modules/
+.DS_Store
+*.tsbuildinfo
+.env*.local
+
+# Expo
+frontend/.expo/
+frontend/dist/
+frontend/expo-env.d.ts
+.metro-health-check*
+
+# Cloud Functions build output
+backend/functions/lib/
+
+# Firebase emulator logs
+*-debug.log

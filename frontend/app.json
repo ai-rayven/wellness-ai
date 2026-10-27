@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "Sano",
+    "slug": "sano",
+    "version": "1.0.0",
+    "scheme": "sano",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "web": {
+      "output": "single",
+      "bundler": "metro",
+      "favicon": "./assets/icon.png"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}
