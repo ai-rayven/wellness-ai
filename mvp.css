@@ -58,7 +58,7 @@ svg.lucide { width: 20px; height: 20px; display: inline-block; vertical-align: -
 .entry .chip svg.lucide { width: 16px; height: 16px; }
 .add svg.lucide { width: 18px; height: 18px; }
 
-/* MacroFactor-style layout: page titles, week grid, insights, pinned search, center + */
+/* MacroFactor-style layout: page titles, week grid, insights, center + */
 .page-h { margin: 6px 0 -2px; font-size: 30px; }
 .wk-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)) 78px; grid-template-rows: repeat(4, 56px) 30px; gap: 8px 6px; }
 .wk-sel { grid-row: 1 / -1; border: 2px solid var(--text); border-radius: 12px; margin: -5px -3px; pointer-events: none; }
@@ -77,14 +77,6 @@ svg.lucide { width: 20px; height: 20px; display: inline-block; vertical-align: -
 .insight-f { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--grid); padding-top: 8px; }
 .insight-f b { font-size: 20px; }
 .insight-f svg.lucide { color: var(--muted); }
-body.has-search main { padding-bottom: calc(env(safe-area-inset-bottom) + 150px); }
-.searchbar {
-  position: fixed; z-index: 4; left: 16px; right: 16px; bottom: calc(env(safe-area-inset-bottom) + 76px);
-  max-width: 528px; margin: 0 auto; display: flex; align-items: center; gap: 10px;
-  min-height: 52px; padding: 0 18px; border: 1px solid var(--grid); border-radius: 999px;
-  background: var(--card); color: var(--muted); font-size: 16px; box-shadow: 0 4px 14px rgb(0 0 0 / .08);
-}
-.searchbar svg.lucide { color: var(--text-2); }
 .fab i svg.lucide { width: 26px; height: 26px; color: #fff; margin: 0; }
 .backdrop { position: absolute; inset: 0; background: rgb(0 0 0 / .35); }
 .plus-sheet {
@@ -94,3 +86,4 @@ body.has-search main { padding-bottom: calc(env(safe-area-inset-bottom) + 150px)
 }
 .plus-opt { display: flex; align-items: center; gap: 12px; border: 0; background: var(--card); border-radius: 14px; min-height: 60px; padding: 0 16px; font-size: 16px; }
 .plus-opt svg.lucide { color: var(--accent); }
+.tabbar a.soon { opacity: .4; pointer-events: none; }

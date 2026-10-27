@@ -7,8 +7,8 @@
 - The profile holds sex, birth date and daily calorie and macro targets, all entered by hand.
 
 **Navigation** (layout borrowed from MacroFactor)
-- Tab bar: Dashboard · Food Log · **+** · Weight · Profile. The center **+** opens "Log food" or "Log weight".
-- Dashboard: a week grid of calories, protein, fat and carbs per day against targets, with a Consumed/Remaining toggle for the selected day. Below it are a 7-day calorie average and a weight trend, plus a "Search for a food" bar pinned above the tab bar.
+- Tab bar: Dashboard · Food Log · **+** · Coach · Profile. The center **+** is the only way to log: it opens "Log food" or "Log weight". Coach (AI chat) is shown greyed out and isn't built in the MVP.
+- Dashboard: a week grid of calories, protein, fat and carbs per day against targets, with a Consumed/Remaining toggle for the selected day. Below it are a 7-day calorie average and a weight trend card. The weight card opens the Weight screen (history and trend).
 
 **Nutrition logging**
 1. Search for a food by name. Results come from the Edamam Food Database API (Basic plan, $14/month after a 30-day trial).

@@ -199,8 +199,7 @@ function dashboard() {
         ${spark(kcals, 'var(--sun)')}<span class="insight-f"><span class="num"><b>${avg.toLocaleString()}</b> kcal avg</span><i data-lucide="chevron-right"></i></span></button>
       <button class="card insight" data-act="tab" data-v="weight"><b>Weight trend</b><span class="muted small">Last 7 entries</span>
         ${spark(ws, 'var(--brand)')}<span class="insight-f"><span class="num"><b>${ws.length ? ws[ws.length - 1] : '–'}</b> lb</span><i data-lucide="chevron-right"></i></span></button>
-    </div>
-    <button class="searchbar" data-act="search"><i data-lucide="search"></i>Search for a food</button>`;
+    </div>`;
 }
 
 function today() {
@@ -376,7 +375,6 @@ function render() {
   document.getElementById('tabs').hidden = !signedIn || needsSetup;
   const screens = { dashboard, log: today, weight, profile };
   el.innerHTML = !signedIn ? signIn() : needsSetup ? setup() : screens[ui.tab]();
-  document.body.classList.toggle('has-search', signedIn && !needsSetup && ui.tab === 'dashboard');
   document.querySelectorAll('#tabs a').forEach((a) => a.classList.toggle('on', a.dataset.v === ui.tab));
   layer.hidden = !ui.sheet;
   document.body.classList.toggle('coach-open', !!ui.sheet);
@@ -406,8 +404,7 @@ const actions = {
   pickday(b) { ui.day = b.dataset.d; },
   mode(b) { ui.mode = b.dataset.v; },
   plus() { ui.sheet = { type: 'plus' }; },
-  search() { actions.add({ dataset: { meal: mealNow() } }); },
-  plusfood() { actions.search(); },
+  plusfood() { actions.add({ dataset: { meal: mealNow() } }); },
   plusweight() { ui.sheet = null; ui.tab = 'weight'; ui.weightDate = TODAY; scrollTo(0, 0); focus('wval'); },
   add(b) { ui.sheet = { type: 'search', meal: b.dataset.meal, q: '', results: [], loading: false }; focus('q'); },
   pick(b) { const s = ui.sheet; ui.sheet = { type: 'food', food: db.foods[b.dataset.id], grams: 100, meal: s.meal, from: s }; focus('grams'); },
