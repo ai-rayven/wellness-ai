@@ -14,11 +14,11 @@
 5. Entries can be edited or deleted.
 
 **Weight logging**
-1. Log a weight in kg for a day, at most one per day. Logging again replaces that day's value.
+1. Log a weight in lb for a day, at most one per day. Logging again replaces that day's value.
 2. See a list of entries and a simple trend chart (30 and 90 days).
 3. Entries can be edited or deleted.
 
-**Not in MVP:** custom foods, serving sizes, imperial units, barcode scanning, label photos, AI coach, recipes, pantry, onboarding quiz, reminders.
+**Not in MVP:** custom foods, serving sizes, other units, barcode scanning, label photos, AI coach, recipes, pantry, onboarding quiz, reminders.
 
 ## Firebase components
 
@@ -111,7 +111,7 @@ erDiagram
     }
     weights {
         string id PK "YYYY-MM-DD"
-        number weightKg
+        number weightLb
         timestamp createdAt
     }
 ```
@@ -124,7 +124,7 @@ erDiagram
 | `users/{uid}/weights/{date}` | Owner only |
 
 - `foods` is shared by all users. A food's `metadata` holds where it came from (e.g. `{ source: "edamam", lookupId: "food_abc123" }`), and the document id is built from those two values, so each food is stored once.
-- One unit everywhere, with no conversion: food in grams, body weight in kg.
+- One unit each, with no conversion: food in grams, body weight in lb.
 - A log entry stores the grams eaten and the computed nutrient totals (`nutrientsPer100g` × grams / 100). A day's view then takes a single query by `date`, and recent foods come from the user's latest log entries.
 - A weight's document id is its date, which enforces one entry per day.
 - **Open item:** Edamam's terms limit storing its data. For the MVP we store food details anyway, so past logs stay correct if Edamam changes a food. Confirm the terms (or switch providers) before a wider launch.
@@ -168,7 +168,7 @@ classDiagram
     }
     class WeightEntry {
         +date
-        +weightKg
+        +weightLb
     }
     class DailySummary {
         +date
@@ -233,7 +233,7 @@ classDiagram
         +day(date) DailySummary
     }
     class WeightService {
-        +set(date, weightKg) WeightEntry
+        +set(date, weightLb) WeightEntry
         +remove(date)
         +range(from, to) WeightEntry[]
     }
