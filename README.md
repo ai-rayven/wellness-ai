@@ -21,6 +21,18 @@ npm --prefix backend/functions install
 | Command | What it does |
 | --- | --- |
 | `scripts/dev.sh` | Starts the Firebase emulators (offline `demo-sano` project) and Expo web. Ctrl-C stops both. |
-| `scripts/check.sh` | Typecheck, lint and tests for the frontend and the Cloud Functions. |
+| `scripts/check.sh` | Typecheck, lint and tests for the frontend and the Cloud Functions. The functions tests run in the emulators, so stop `dev.sh` first. |
 
 Expo web runs on http://localhost:8081 and the Emulator UI on http://localhost:4000.
+
+## Edamam keys
+
+Without keys, `searchFoods` in the emulator answers with mock foods, and the emulator logs that it cannot find the secrets.
+To use real Edamam data on your machine, create `backend/functions/.secret.local` (git ignores it):
+
+```sh
+EDAMAM_APP_ID=...
+EDAMAM_APP_KEY=...
+```
+
+For production, store them in Secret Manager with `firebase functions:secrets:set EDAMAM_APP_ID` and `EDAMAM_APP_KEY`.

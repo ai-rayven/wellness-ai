@@ -9,8 +9,9 @@ frontend/dist/
 frontend/expo-env.d.ts
 .metro-health-check*
 
-# Cloud Functions build output
+# Cloud Functions build output and local Edamam keys
 backend/functions/lib/
+backend/functions/.secret.local
 
 # Firebase emulator logs
 *-debug.log
