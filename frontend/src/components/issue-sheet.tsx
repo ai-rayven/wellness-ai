@@ -6,6 +6,8 @@ import { reportIssue, type Issue } from '@/services/issues';
 
 import colors from '../../colors';
 
+import { Button } from './button';
+
 // The same limits as the reportIssue function.
 const MAX_TITLE_LENGTH = 200;
 const MAX_DESCRIPTION_LENGTH = 5000;
@@ -17,8 +19,8 @@ interface IssueSheetProps {
 }
 
 /**
- * A tall sheet to report an issue. The fields and Send are at the top, because the phone keyboard
- * covers the bottom half of the screen.
+ * A tall sheet to report an issue, with Send at the bottom in reach of the thumb. The phone keyboard
+ * covers Send while it is open, so the fields are at the top and the keyboard is not opened at the start.
  */
 export function IssueSheet({ visible, onClose, onSent }: IssueSheetProps) {
   return (
@@ -46,11 +48,10 @@ function IssueForm({ onClose, onSent }: Omit<IssueSheetProps, 'visible'>) {
     }
   }
 
-  const canSend = !!title.trim() && !busy;
   return (
     <View className="flex-1 justify-end">
       <Pressable accessibilityLabel="Close" className="absolute inset-0 bg-black/30" onPress={onClose} />
-      <View className="mx-auto h-[92%] w-full max-w-[480px] gap-3 rounded-t-[22px] bg-bg p-4">
+      <View className="mx-auto h-[92%] w-full max-w-[480px] gap-3 rounded-t-[22px] bg-bg p-4 pb-8">
         <View className="flex-row items-center gap-3">
           <Pressable
             accessibilityRole="button"
@@ -61,21 +62,12 @@ function IssueForm({ onClose, onSent }: Omit<IssueSheetProps, 'visible'>) {
             <X color={colors.text} size={20} />
           </Pressable>
           <Text className="flex-1 text-center text-lg font-bold text-ink">Report an issue</Text>
-          <Pressable
-            accessibilityRole="button"
-            disabled={!canSend}
-            onPress={send}
-            className={`min-h-10 justify-center rounded-full bg-accent px-4 ${canSend ? '' : 'opacity-45'}`}
-          >
-            <Text className="text-base font-semibold text-white">Send</Text>
-          </Pressable>
+          <View className="size-10" />
         </View>
-        {error && <Text className="text-center text-sm text-carbs">{error}</Text>}
         <TextInput
           accessibilityLabel="Issue title"
           placeholder="Title"
           placeholderTextColor={colors.muted}
-          autoFocus
           maxLength={MAX_TITLE_LENGTH}
           value={title}
           onChangeText={setTitle}
@@ -89,9 +81,11 @@ function IssueForm({ onClose, onSent }: Omit<IssueSheetProps, 'visible'>) {
           maxLength={MAX_DESCRIPTION_LENGTH}
           value={description}
           onChangeText={setDescription}
-          className="h-40 rounded-xl bg-card-2 px-3 py-3 text-base text-text"
+          className="flex-1 rounded-xl bg-card-2 px-3 py-3 text-base text-text"
           style={{ textAlignVertical: 'top' }}
         />
+        {error && <Text className="text-center text-sm text-carbs">{error}</Text>}
+        <Button label="Send" disabled={!title.trim() || busy} onPress={send} />
       </View>
     </View>
   );
