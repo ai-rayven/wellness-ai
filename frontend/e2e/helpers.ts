@@ -26,3 +26,13 @@ export async function signInAndSetUp(page: Page) {
   await page.getByRole('button', { name: 'Continue' }).click();
   await expect(page.getByText('Dashboard').first()).toBeVisible();
 }
+
+/** Opens the + sheet and picks an option. Clicks + again if a click comes before the screen handles it. */
+export async function openPlusOption(page: Page, option: 'Log food' | 'Log weight') {
+  const button = page.getByRole('button', { name: option, exact: true });
+  await expect(async () => {
+    await page.getByRole('button', { name: 'Log food or weight' }).click();
+    await expect(button).toBeVisible({ timeout: 2000 });
+  }).toPass();
+  await button.click();
+}

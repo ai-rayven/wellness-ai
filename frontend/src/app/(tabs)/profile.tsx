@@ -1,22 +1,79 @@
+import { useState } from 'react';
 import { Text, View } from 'react-native';
 
 import { Button } from '@/components/button';
+import { ProfileFields, fromDraft, toDraft, type ProfileDraft } from '@/components/profile-fields';
 import { Screen } from '@/components/screen';
+import { toIsoDate } from '@/lib/dates';
+import { profileInputError, type ProfileInput } from '@/lib/profile';
+import type { User } from '@/lib/types';
 import { signOut } from '@/services/auth';
+import { updateProfile } from '@/services/profile';
 import { useSessionWith } from '@/services/session';
 
-// Placeholder until the Profile screen is built: shows who is signed in.
+/** The account with sign-out, and the profile fields from setup. */
 export default function Profile() {
   const session = useSessionWith('ready');
   if (!session) return null;
 
+  const { user } = session;
   return (
-    <Screen>
+    <Screen inTabs>
       <Text className="text-[30px] font-extrabold text-ink">Profile</Text>
+
       <View className="gap-3 rounded-[18px] bg-card p-4">
-        <Text className="text-base text-text">{session.user.displayName || session.user.email}</Text>
-        <Button label="Sign out" variant="outline" onPress={signOut} />
+        <Text className="text-base font-semibold text-ink">Account</Text>
+        <View className="flex-row items-center gap-3">
+          <View className="size-11 items-center justify-center rounded-full bg-accent">
+            <Text className="text-lg font-bold text-white">{(user.displayName || user.email || '?')[0].toUpperCase()}</Text>
+          </View>
+          <View className="flex-1">
+            <Text className="text-base font-semibold text-ink">{user.displayName}</Text>
+            <Text className="text-xs text-text-2">{user.email}</Text>
+          </View>
+          <View className="w-28">
+            <Button label="Sign out" variant="ghost" onPress={signOut} />
+          </View>
+        </View>
       </View>
+
+      {/* Keyed by the saved profile, so the form starts again from it after each save. */}
+      <ProfileCard key={JSON.stringify([user.sex, user.birthDate, user.targets])} user={user} />
     </Screen>
+  );
+}
+
+function ProfileCard({ user }: { user: User }) {
+  const saved = toDraft(user);
+  const [draft, setDraft] = useState<ProfileDraft>(saved);
+  const [busy, setBusy] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  const today = toIsoDate(new Date());
+  const input = fromDraft(draft);
+  const inputError = profileInputError(input, today);
+  const dirty = JSON.stringify(draft) !== JSON.stringify(saved);
+
+  async function save() {
+    if (inputError) return;
+    setBusy(true);
+    setSaveError(null);
+    try {
+      await updateProfile(user.id, input as ProfileInput, today);
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : String(e));
+      setBusy(false);
+    }
+  }
+
+  return (
+    <View className="gap-4 rounded-[18px] bg-card p-4">
+      <Text className="text-base font-semibold text-ink">Profile</Text>
+      <ProfileFields draft={draft} today={today} onChange={setDraft} />
+      <Button label="Save" disabled={!dirty || !!inputError || busy} onPress={save} />
+      {dirty && (saveError ?? inputError) && (
+        <Text className="text-center text-sm text-text-2">{saveError ?? inputError}</Text>
+      )}
+    </View>
   );
 }

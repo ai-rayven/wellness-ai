@@ -23,7 +23,7 @@ test('a new user signs in, sets up the profile and signs out', async ({ page }) 
   await expect(continueButton).toBeEnabled();
   await continueButton.click();
 
-  await expect(page.getByText('Daily target: 2200 kcal')).toBeVisible();
+  await expect(page.getByText('of 2200')).toBeVisible();
 
   const [user] = await listDocuments('users');
   expect(user.fields).toMatchObject({
@@ -44,7 +44,7 @@ test('a new user signs in, sets up the profile and signs out', async ({ page }) 
 
   // The session survives a reload.
   await page.reload();
-  await expect(page.getByText('Daily target: 2200 kcal')).toBeVisible();
+  await expect(page.getByText('of 2200')).toBeVisible();
 
   await page.getByRole('tab', { name: 'Profile' }).click();
   await page.getByRole('button', { name: 'Sign out' }).click();
@@ -52,7 +52,7 @@ test('a new user signs in, sets up the profile and signs out', async ({ page }) 
 
   // Signing in again skips setup.
   await signInWithGoogle(page, 'existing');
-  await expect(page.getByText('Daily target: 2200 kcal')).toBeVisible();
+  await expect(page.getByText('of 2200')).toBeVisible();
 });
 
 test('setup rejects a birth date in the future', async ({ page }) => {

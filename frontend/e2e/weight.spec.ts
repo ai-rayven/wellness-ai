@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 import { resetEmulators } from './emulators';
-import { signInAndSetUp } from './helpers';
+import { openPlusOption, signInAndSetUp } from './helpers';
 
 test.beforeEach(async () => {
   await resetEmulators();
@@ -15,8 +15,7 @@ const isoDaysAgo = (days: number) => {
 
 test('log weights for two days, see the trend and delete one', async ({ page }) => {
   await signInAndSetUp(page);
-  await page.getByRole('button', { name: 'Log food or weight' }).click();
-  await page.getByRole('button', { name: 'Log weight' }).click();
+  await openPlusOption(page, 'Log weight');
 
   await expect(page.getByText('Log at least two days to see a trend.')).toBeVisible();
   await page.getByLabel('Date', { exact: true }).fill(isoDaysAgo(1));

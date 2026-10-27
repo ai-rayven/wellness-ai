@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 import { listDocuments, resetEmulators } from './emulators';
-import { signInAndSetUp } from './helpers';
+import { openPlusOption, signInAndSetUp } from './helpers';
 
 test.beforeEach(async () => {
   await resetEmulators();
@@ -10,8 +10,7 @@ test.beforeEach(async () => {
 test('log a food, edit it and delete it', async ({ page }) => {
   await signInAndSetUp(page);
 
-  await page.getByRole('button', { name: 'Log food or weight' }).click();
-  await page.getByRole('button', { name: 'Log food', exact: true }).click();
+  await openPlusOption(page, 'Log food');
   await page.getByLabel('Search foods').fill('rolled oats');
   await page.getByRole('button', { name: /^Rolled oats\s+379 kcal/ }).click();
 
