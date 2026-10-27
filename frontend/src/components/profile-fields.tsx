@@ -68,17 +68,13 @@ export function ProfileFields({ draft, today, onChange }: ProfileFieldsProps) {
       </Field>
 
       <Field label="Birth date">
-        <View className="flex-row items-center gap-3">
-          <View className="flex-1">
-            <DateField
-              label="Birth date"
-              value={birthDate}
-              max={today}
-              onChange={(value) => onChange({ ...draft, birthDate: value })}
-            />
-          </View>
-          {age !== null && <Text className="text-sm text-text-2">Age {age}</Text>}
-        </View>
+        <DateField
+          label="Birth date"
+          value={birthDate}
+          max={today}
+          onChange={(value) => onChange({ ...draft, birthDate: value })}
+        />
+        {age !== null && <Text className="text-sm text-text-2">Age {age}</Text>}
       </Field>
 
       <Field label="Daily targets">
