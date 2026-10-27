@@ -1,4 +1,4 @@
-// MVP walkthrough: the flows in docs/mvp.md with mock Auth, Edamam search and Firestore.
+// MVP walkthrough: the flows in mvp.md with mock Auth, Edamam search and Firestore.
 // Stored data uses the documented shapes (users, foods, logEntries, weights) and persists in localStorage.
 
 // ---------- Mock Edamam: name, brand, kcal / protein / carbs / fat per 100 g ----------

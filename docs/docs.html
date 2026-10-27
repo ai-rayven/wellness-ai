@@ -43,13 +43,13 @@
   <main id="doc" class="doc"><p class="muted">Loading…</p></main>
 
   <script src="brand.js"></script>
-  <!-- Renders docs/mvp.md so the diagrams live in one file. -->
+  <!-- Renders mvp.md so the diagrams live in one file. -->
   <script type="module">
     import { marked } from 'https://cdn.jsdelivr.net/npm/marked@12.0.2/lib/marked.esm.js';
     import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.esm.min.mjs';
 
     const el = document.getElementById('doc');
-    const md = await fetch('docs/mvp.md', { cache: 'no-store' }).then((r) => r.text());
+    const md = await fetch('mvp.md', { cache: 'no-store' }).then((r) => r.text());
     el.innerHTML = marked.parse(md);
     el.querySelectorAll('pre > code.language-mermaid').forEach((code) => {
       const div = document.createElement('div');
