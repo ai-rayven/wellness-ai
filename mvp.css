@@ -1,0 +1,49 @@
+/* MVP walkthrough: only what styles.css doesn't already cover. */
+.mvp-tag { font: 700 11px/1 -apple-system, system-ui, sans-serif; color: var(--accent); background: var(--card); border-radius: 6px; padding: 4px 6px; margin-left: 4px; }
+body.no-tabs main { padding-bottom: 32px; }
+.tabbar[hidden] { display: none; }
+/* Let cards and their 2-column grids shrink to the phone width instead of growing to fit inputs. */
+main > * { min-width: 0; }
+main .grid2, .c-scroll .grid2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+/* Sign-in */
+.signin { display: grid; justify-items: center; gap: 12px; text-align: center; padding: 40px 0 0; }
+.signin h1 { font-size: 34px; }
+.signin p { margin: 0; }
+.sso { width: 100%; max-width: 340px; min-height: 50px; border-radius: 14px; font-weight: 600; font-size: 16px; border: 1px solid var(--grid); background: var(--card); color: var(--text); }
+.sso.apple { background: #000; color: #fff; border-color: #000; }
+.sso b { color: #4285f4; margin-right: 6px; }
+
+/* Forms */
+.field { display: grid; gap: 6px; margin: 14px 0; }
+.field > label { font-size: 13px; font-weight: 600; color: var(--text-2); }
+.seg { display: flex; background: var(--card-2); border-radius: 12px; padding: 3px; gap: 3px; }
+.seg button { flex: 1; border: 0; background: none; border-radius: 9px; min-height: 38px; font-size: 14px; font-weight: 600; color: var(--text-2); }
+.seg button.on { background: var(--card); color: var(--text); box-shadow: 0 1px 3px rgb(0 0 0 / .1); }
+.small-seg { padding: 2px; }
+.small-seg button { min-height: 28px; padding: 0 10px; font-size: 12px; }
+.num-in { display: flex; align-items: center; gap: 6px; background: var(--card-2); border-radius: 12px; padding: 6px 12px; min-height: 48px; }
+.num-in span { font-size: 12px; color: var(--text-2); }
+/* Label above value so long numbers and dates fit in half-width cells. */
+.grid2 .num-in { display: grid; grid-template-columns: 1fr auto; gap: 2px 6px; padding: 8px 12px; }
+.grid2 .num-in span { grid-column: 1 / -1; }
+.grid2 .num-in input { text-align: left; }
+.num-in input { flex: 1; min-width: 0; width: 100%; border: 0; background: none; font: inherit; font-size: 16px; color: var(--text); text-align: right; outline: none; }
+.num-in i { font-style: normal; color: var(--text-2); font-size: 13px; }
+.big-in input { font-size: 28px; font-weight: 700; }
+.field .row input[type="date"] { flex: 1; min-width: 0; border: 0; background: var(--card-2); border-radius: 12px; min-height: 48px; padding: 0 12px; font: inherit; font-size: 16px; color: var(--text); }
+.btn.wide { width: 100%; margin-top: 8px; }
+.btn:disabled { opacity: .45; }
+
+/* Lists */
+.day-nav { display: flex; align-items: center; justify-content: space-between; }
+.day-nav b { font-size: 17px; }
+.day-nav button:disabled { opacity: .3; }
+.entry { display: flex; gap: 10px; align-items: center; width: 100%; text-align: left; border: 0; background: none; padding: 10px 0; border-top: 1px solid var(--grid); min-height: 52px; }
+.card-h + .entry, .card > .entry:first-child { border-top: 0; }
+.entry .t { flex: 1; min-width: 0; display: grid; }
+.entry .t b { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.add { width: 100%; border: 1px dashed var(--grid); background: none; border-radius: 12px; min-height: 44px; margin-top: 6px; color: var(--accent); font-weight: 600; }
+.label { font-size: 12px; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: .04em; }
+.c-scroll .card { padding: 4px 16px; }
+.data { margin: 12px 0 0; padding: 12px; background: var(--card-2); border-radius: 12px; font-size: 11px; line-height: 1.4; overflow-x: auto; max-height: 420px; }

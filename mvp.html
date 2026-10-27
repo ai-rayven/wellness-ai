@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f8f3e9">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Sano · MVP</title>
+  <script>
+    // Apply the chosen brand before CSS paints (see brand.js).
+    (function () {
+      var b = new URLSearchParams(location.search).get('brand');
+      try { b = b || localStorage.getItem('brand'); } catch (e) {}
+      if (b === 'youmay') document.documentElement.dataset.brand = b;
+    })();
+  </script>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.png">
+  <link rel="apple-touch-icon" href="icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="mvp.css">
+</head>
+<body>
+  <header class="top">
+    <div class="top-row">
+      <div class="brand"><span data-mark data-size="26"></span><span class="wordmark" data-wordmark>Sano</span><span class="mvp-tag">MVP</span></div>
+      <div class="row" style="gap:8px">
+        <a class="pill-link" href="docs.html">Docs</a>
+        <a class="pill-link" href="index.html">Mockups</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="mvp"></main>
+
+  <nav id="tabs" class="tabbar" aria-label="Main" hidden>
+    <a href="#" data-act="tab" data-v="today"><span>◉</span>Today</a>
+    <a href="#" data-act="tab" data-v="weight"><span>⚖️</span>Weight</a>
+    <a href="#" data-act="tab" data-v="profile"><span>👤</span>Profile</a>
+  </nav>
+
+  <div id="sheet" class="coach-layer" role="dialog" aria-label="Add food" hidden></div>
+
+  <script src="brand.js"></script>
+  <script src="mvp.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+  </script>
+</body>
+</html>
