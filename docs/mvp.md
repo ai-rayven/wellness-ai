@@ -1,5 +1,12 @@
 # Sano MVP: Nutrition + Weight Logging
 
+## Stack
+
+- **App:** Expo (React Native) for iOS and Android, styled with NativeWind (Tailwind for React Native) and using `lucide-react-native` for icons. Built and submitted with EAS.
+- **Backend:** Firebase only: Auth, Cloud Firestore, Cloud Functions and Secret Manager, used through the Firebase JS SDK.
+- **Sign-in:** native Apple (`expo-apple-authentication`) and Google (`@react-native-google-signin/google-signin`) buttons, whose tokens sign the user into Firebase Auth. This needs an Expo development build, because Expo Go can't run these native modules.
+- **Food data:** Edamam Food Database API, called only from Cloud Functions.
+
 ## MVP scope
 
 **Sign in**
@@ -37,9 +44,9 @@ flowchart LR
     social(("Google / Apple"))
     edamam(("Edamam<br/>Food Database"))
 
+    app(("Sano App<br/>Expo iOS / Android"))
+
     subgraph fb["Firebase project"]
-        hosting["Hosting<br/>PWA files"]
-        app(("Sano App"))
         auth(("Auth"))
         fn(("Cloud Function<br/>searchFoods"))
         secret["Secret Manager<br/>Edamam app ID + key"]
@@ -51,10 +58,9 @@ flowchart LR
         end
     end
 
-    user -->|"Open"| hosting
-    hosting -->|"Load"| app
-    app -->|"Sign in"| auth
-    auth -.->|"OAuth"| social
+    user -->|"Use"| app
+    app -.->|"Native sign-in"| social
+    app -->|"Sign in with token"| auth
     app -->|"Read / write<br/>via Security Rules"| fs
     app -->|"Search name"| fn
     secret -.->|"Key"| fn
@@ -67,7 +73,7 @@ flowchart LR
     classDef external fill:#f3f3f3,stroke:#888
     class app,auth,fn service
     class users,foods,logs,weights store
-    class hosting,secret artifact
+    class secret artifact
     class social,edamam external
 ```
 
@@ -135,7 +141,7 @@ erDiagram
 - A log entry stores a snapshot of the food (`name`, `brand`, `nutrientsPer100g`) taken when it's logged, the grams eaten and the computed nutrient totals (`nutrientsPer100g` × grams / 100). Edits recalculate from the snapshot, so past entries never change even if `foods/{id}` is updated. `foodId` still links to the shared food for recent foods and re-logging. A day's view then takes a single query by `date`, and recent foods come from the user's latest log entries.
 - Dates are the user's local calendar day (`YYYY-MM-DD`). The Dashboard week and 7-day average use one range query on `date`. No composite indexes are needed.
 - A weight's document id is its date, which enforces one entry per day.
-- **Open item:** Edamam's terms limit storing its data. For the MVP we store food details anyway, so past logs stay correct if Edamam changes a food. Confirm the terms (or switch providers) before a wider launch.
+- **Open item:** Edamam's terms limit storing its data. For the MVP we store food details anyway, so past logs stay correct if Edamam changes a food. Confirm the terms before a wider launch. Fallback if they rule this out: USDA FoodData Central, which is public domain and can be stored freely, though its search and brand coverage are weaker.
 
 ## App entities
 
