@@ -4,7 +4,7 @@
 
 **Sign in**
 - Google and Apple sign-in through Firebase Auth. Apple sign-in is required on iOS whenever Google is offered.
-- Daily calorie and macro targets are entered by hand in the profile.
+- The profile holds sex, birth date and daily calorie and macro targets, all entered by hand.
 
 **Nutrition logging**
 1. Search for a food by name. Results come from the Edamam Food Database API (Basic plan, $14/month after a 30-day trial).
@@ -88,6 +88,8 @@ erDiagram
         string id PK "Auth uid"
         string displayName
         string email
+        string sex "male | female"
+        string birthDate "YYYY-MM-DD"
         map targets "kcal, proteinG, carbsG, fatG"
         timestamp createdAt
     }
@@ -125,6 +127,7 @@ erDiagram
 
 - `foods` is shared by all users. A food's `metadata` holds where it came from (e.g. `{ source: "edamam", lookupId: "food_abc123" }`), and the document id is built from those two values, so each food is stored once.
 - One unit each, with no conversion: food in grams, body weight in lb.
+- Users store a birth date, not an age, so age never goes stale. The app calculates it.
 - A log entry stores the grams eaten and the computed nutrient totals (`nutrientsPer100g` × grams / 100). A day's view then takes a single query by `date`, and recent foods come from the user's latest log entries.
 - A weight's document id is its date, which enforces one entry per day.
 - **Open item:** Edamam's terms limit storing its data. For the MVP we store food details anyway, so past logs stay correct if Edamam changes a food. Confirm the terms (or switch providers) before a wider launch.
@@ -144,7 +147,10 @@ classDiagram
         +id
         +displayName
         +email
+        +sex Sex
+        +birthDate
         +targets Nutrients
+        +age() number
     }
     class Food {
         +id
@@ -184,6 +190,11 @@ classDiagram
         +scale(factor) Nutrients
         +plus(other) Nutrients
     }
+    class Sex {
+        <<enumeration>>
+        male
+        female
+    }
     class MealType {
         <<enumeration>>
         breakfast
@@ -193,6 +204,7 @@ classDiagram
     }
 
     User *-- Nutrients : targets
+    User --> Sex
     Food *-- Nutrients
     LogEntry *-- Nutrients
     LogEntry --> Food : foodId
@@ -220,6 +232,7 @@ classDiagram
     }
     class ProfileService {
         +get() User
+        +updateProfile(sex, birthDate)
         +updateTargets(Nutrients)
     }
     class FoodService {
