@@ -8,8 +8,8 @@
 
 **Nutrition logging**
 1. Search for a food by name. Results come from the Edamam Food Database API (Basic plan, $14/month after a 30-day trial).
-2. Choose a result, a meal (breakfast, lunch, dinner or snack) and the number of servings, then log it.
-3. If a food isn't found, create a custom food by typing in the label values.
+2. Choose a result, a meal (breakfast, lunch, dinner or snack) and an amount (e.g. 2 slices or 150 g), then log it.
+3. Logged foods are saved to the user's recent foods so they can be logged again without searching.
 4. The Today view shows entries grouped by meal and totals against targets. Earlier days can be browsed.
 5. Entries can be edited or deleted.
 
@@ -18,7 +18,7 @@
 2. See a list of entries and a simple trend chart (30 and 90 days).
 3. Entries can be edited or deleted.
 
-**Not in MVP:** barcode scanning, label photos, AI coach, recipes, pantry, onboarding quiz, reminders.
+**Not in MVP:** custom foods, barcode scanning, label photos, AI coach, recipes, pantry, onboarding quiz, reminders.
 
 ## Firebase components
 
@@ -55,7 +55,6 @@ flowchart LR
     app -->|"Search name"| fn
     secret -.->|"Key"| fn
     fn -->|"Query"| edamam
-    fn -->|"Cache results"| foods
 
     classDef service fill:#e8efff,stroke:#5474b4,stroke-width:2px
     classDef store fill:#f0e8fa,stroke:#8b6aad,stroke-width:2px
@@ -68,7 +67,7 @@ flowchart LR
 ```
 
 - The app reads and writes Firestore directly through the Firebase SDK. Security Rules make sure each user can only access their own data.
-- Only the `searchFoods` function talks to Edamam, so the API credentials never ship in the app. Switching food APIs later means changing only this function.
+- Only the `searchFoods` function talks to Edamam, so the API credentials never ship in the app. It only searches and never writes to Firestore. Switching food APIs later means changing only this function.
 - Cloud Functions and Secret Manager require the **Blaze** (pay-as-you-go) plan. At MVP traffic, usage stays within the free allowance. Edamam Basic is the only fixed cost ($14/month after the trial).
 
 ## Data model (Firestore)
@@ -80,10 +79,10 @@ config:
   theme: neutral
 ---
 erDiagram
-    users ||--o{ logEntries : "subcollection"
-    users ||--o{ weights : "subcollection"
+    users ||--o{ foods : "contains"
+    users ||--o{ logEntries : "contains"
+    users ||--o{ weights : "contains"
     foods ||--o{ logEntries : "foodId"
-    users |o--o{ foods : "createdBy (custom)"
 
     users {
         string id PK "Auth uid"
@@ -94,15 +93,13 @@ erDiagram
         timestamp createdAt
     }
     foods {
-        string id PK "edamam_foodId or auto id"
-        string source "edamam | custom"
-        string sourceId "Edamam foodId"
+        string id PK "source_lookupId"
         string name
         string brand
-        number servingSize
-        string servingUnit "g, ml, piece"
-        map nutrients "per serving"
-        string createdBy FK "uid, custom only"
+        map nutrientsPer100g "kcal, proteinG, carbsG, fatG"
+        array measures "label + grams"
+        map metadata "source, lookupId, other provider ids"
+        timestamp lastUsedAt
     }
     logEntries {
         string id PK "auto id"
@@ -110,8 +107,10 @@ erDiagram
         string meal "breakfast | lunch | dinner | snack"
         string foodId FK
         string foodName "copy for display"
-        number servings
-        map nutrients "copy: food x servings"
+        string measure "e.g. 1 slice"
+        number quantity
+        number grams
+        map nutrients "computed totals"
         timestamp createdAt
     }
     weights {
@@ -124,11 +123,13 @@ erDiagram
 | Path | Who can access |
 | --- | --- |
 | `users/{uid}` | Owner only |
+| `users/{uid}/foods/{id}` | Owner only |
 | `users/{uid}/logEntries/{id}` | Owner only |
 | `users/{uid}/weights/{date}` | Owner only |
-| `foods/{id}` | Edamam foods: anyone signed in can read, only the function writes. Custom foods: creator only |
 
-- Each log entry stores copies of the food's name and nutrients. A day's view then takes a single query by `date`, and history doesn't change if a food is edited later.
+- Everything lives under the user, so one Security Rule (owner only) covers all of it.
+- When a food is first logged, the app saves its full details to `foods`. The food's `metadata` holds where it came from (e.g. `{ source: "edamam", lookupId: "food_abc123" }`), and the document id is built from those two values, so the same food is saved only once per user.
+- Edamam gives nutrients per 100 g plus measures (1 slice = 30 g). A log entry stores the chosen measure, quantity and grams, plus the computed nutrient totals. A day's view then takes a single query by `date`.
 - A weight's document id is its date, which enforces one entry per day. Weights are stored in kg and converted for display using `weightUnit`.
 - **Open item:** Edamam's terms limit storing its data. For the MVP we store food details anyway, so past logs stay correct if Edamam changes a food. Confirm the terms (or switch providers) before a wider launch.
 
@@ -152,12 +153,20 @@ classDiagram
     }
     class Food {
         +id
-        +source FoodSource
         +name
         +brand
-        +servingSize
-        +servingUnit
-        +nutrients Nutrients
+        +nutrientsPer100g Nutrients
+        +measures Measure[]
+        +metadata FoodMetadata
+        +lastUsedAt
+    }
+    class Measure {
+        +label
+        +grams
+    }
+    class FoodMetadata {
+        +source
+        +lookupId
     }
     class LogEntry {
         +id
@@ -165,7 +174,9 @@ classDiagram
         +meal MealType
         +foodId
         +foodName
-        +servings
+        +measure
+        +quantity
+        +grams
         +nutrients Nutrients
     }
     class WeightEntry {
@@ -184,7 +195,7 @@ classDiagram
         +proteinG
         +carbsG
         +fatG
-        +times(n) Nutrients
+        +scale(factor) Nutrients
         +plus(other) Nutrients
     }
     class MealType {
@@ -193,11 +204,6 @@ classDiagram
         lunch
         dinner
         snack
-    }
-    class FoodSource {
-        <<enumeration>>
-        edamam
-        custom
     }
     class WeightUnit {
         <<enumeration>>
@@ -210,7 +216,8 @@ classDiagram
     LogEntry *-- Nutrients
     LogEntry --> Food : foodId
     LogEntry --> MealType
-    Food --> FoodSource
+    Food *-- Measure
+    Food *-- FoodMetadata
     User --> WeightUnit
     DailySummary o-- LogEntry
 ```
@@ -239,10 +246,10 @@ classDiagram
     }
     class FoodService {
         +search(name) Food[]
-        +createCustom(Food) Food
+        +recent() Food[]
     }
     class LogService {
-        +add(food, meal, servings, date) LogEntry
+        +add(food, meal, measure, quantity, date) LogEntry
         +update(LogEntry)
         +remove(id)
         +day(date) DailySummary
@@ -261,4 +268,4 @@ classDiagram
     WeightService ..> WeightEntry
 ```
 
-Each service is a thin wrapper around the Firebase SDK. `FoodService.search` is the only one that goes through Cloud Functions.
+Each service is a thin wrapper around the Firebase SDK. `FoodService.search` is the only one that goes through Cloud Functions. `LogService.add` saves the food to the user's `foods` (if it isn't there yet) and writes the entry.
