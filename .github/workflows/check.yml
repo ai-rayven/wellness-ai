@@ -1,0 +1,65 @@
+# Runs the full gate (scripts/check.sh) on every PR and on main.
+# On a PR, it also posts phone screenshots of the main screens (e2e/screens.spec.ts).
+name: Check
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write # Pushes the screenshots to the ci-screens branch.
+      pull-requests: write # Posts the screenshot comment.
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            frontend/package-lock.json
+            backend/functions/package-lock.json
+
+      # The Firestore and Storage emulators run on Java.
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: actions/cache@v6
+        with:
+          path: ~/.cache/firebase/emulators
+          key: firebase-emulators-15.2.1
+
+      - name: Install
+        run: |
+          npm install -g firebase-tools@15.2.1
+          npm ci --prefix frontend
+          npm ci --prefix backend/functions
+          cd frontend && npx playwright install --with-deps chromium
+
+      - name: Gate
+        run: scripts/check.sh
+
+      - name: Upload Playwright traces
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-results
+          path: frontend/test-results/
+
+      # A PR from a fork cannot push to this repo.
+      - name: Post screenshots
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: scripts/post-screens.sh ${{ github.event.pull_request.number }} ${{ github.event.pull_request.head.sha }}

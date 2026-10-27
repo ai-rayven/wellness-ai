@@ -27,6 +27,12 @@ npx --prefix frontend playwright install chromium   # for the E2E tests
 
 Expo web runs on http://localhost:8081 and the Emulator UI on http://localhost:4000.
 
+## CI
+
+GitHub Actions runs `scripts/check.sh` on every PR and on `main` (`.github/workflows/check.yml`).
+On a PR, it also posts phone screenshots of the main screens (`frontend/e2e/screens.spec.ts`) in one comment.
+The images are on the `ci-screens` branch, because GitHub has no API to attach images to a comment.
+
 ## Edamam keys
 
 Without keys, `searchFoods` in the emulator answers with mock foods, and the emulator logs that it cannot find the secrets.
