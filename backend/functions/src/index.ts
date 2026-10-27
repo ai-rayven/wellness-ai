@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase-admin/app';
 import { FieldValue, getFirestore } from 'firebase-admin/firestore';
+import { getDownloadURL, getStorage } from 'firebase-admin/storage';
 import { HttpsError, onCall } from 'firebase-functions/https';
 import { beforeUserCreated } from 'firebase-functions/identity';
 import { logger } from 'firebase-functions';
@@ -10,6 +11,7 @@ import { EdamamError, searchEdamam } from './edamam';
 import type { Food } from './food';
 import { GitHubError, createGitHubIssue, type Issue, type IssueInput } from './github';
 import { searchMockFoods } from './mockFoods';
+import { MAX_SCREENSHOTS, isScreenshotPath } from './screenshots';
 
 initializeApp();
 
@@ -79,23 +81,47 @@ async function saveNewFoods(foods: Food[]): Promise<void> {
 /** Creates a GitHub issue in the Sano repo from the Profile tab. Only for signed-in users. */
 export const reportIssue = onCall({ secrets: [GITHUB_ISSUES_TOKEN] }, async (request): Promise<Issue> => {
   if (!request.auth) throw new HttpsError('unauthenticated', 'Sign in to report an issue.');
-  const data = request.data as { title?: unknown; description?: unknown } | null;
-  const { title, description } = data ?? {};
+  const uid = request.auth.uid;
+  const data = request.data as { title?: unknown; description?: unknown; screenshots?: unknown } | null;
+  const { title, description, screenshots = [] } = data ?? {};
   if (typeof title !== 'string' || !title.trim()) throw new HttpsError('invalid-argument', 'title must be a non-empty string.');
   if (title.length > MAX_TITLE_LENGTH) throw new HttpsError('invalid-argument', `title must be at most ${MAX_TITLE_LENGTH} characters.`);
   if (typeof description !== 'string') throw new HttpsError('invalid-argument', 'description must be a string.');
   if (description.length > MAX_DESCRIPTION_LENGTH) {
     throw new HttpsError('invalid-argument', `description must be at most ${MAX_DESCRIPTION_LENGTH} characters.`);
   }
+  if (!Array.isArray(screenshots) || screenshots.length > MAX_SCREENSHOTS) {
+    throw new HttpsError('invalid-argument', `screenshots must be a list of at most ${MAX_SCREENSHOTS} paths.`);
+  }
+  if (!screenshots.every((path) => isScreenshotPath(path, uid))) {
+    throw new HttpsError('invalid-argument', 'screenshots must be paths of your own uploads.');
+  }
 
-  return createIssue({ title, description });
+  await Promise.all(screenshots.map(assertUploaded));
+  return createIssue({ title, description, screenshots });
 });
 
-async function createIssue(input: IssueInput): Promise<Issue> {
+async function assertUploaded(path: string): Promise<void> {
+  const [exists] = await getStorage().bucket().file(path).exists();
+  if (!exists) throw new HttpsError('invalid-argument', `Screenshot ${path} was not uploaded.`);
+}
+
+interface ReportInput {
+  title: string;
+  description: string;
+  /** Storage paths of uploaded screenshots. */
+  screenshots: string[];
+}
+
+async function createIssue({ title, description, screenshots }: ReportInput): Promise<Issue> {
   const token = GITHUB_ISSUES_TOKEN.value();
-  // Without a token, the emulator answers with a fake issue and creates nothing.
+  // Without a token, the emulator answers with a fake issue and creates nothing. It also cannot
+  // give download URLs: the Storage emulator applies the rules to the Admin SDK there.
   if (inEmulator() && !token) return { number: 1 };
 
+  // A download URL is public, so GitHub can show the screenshot.
+  const screenshotUrls = await Promise.all(screenshots.map((path) => getDownloadURL(getStorage().bucket().file(path))));
+  const input: IssueInput = { title, description, screenshotUrls };
   try {
     return await createGitHubIssue(input, token);
   } catch (error) {

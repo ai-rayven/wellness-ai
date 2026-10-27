@@ -8,6 +8,8 @@ const FOOTER = '\n\n---\nReported from the Sano app.';
 export interface IssueInput {
   title: string;
   description: string;
+  /** Public image URLs, shown under the description. */
+  screenshotUrls: string[];
 }
 
 export interface Issue {
@@ -29,11 +31,16 @@ export async function createGitHubIssue(input: IssueInput, token: string): Promi
       'Content-Type': 'application/json',
       'X-GitHub-Api-Version': '2022-11-28',
     },
-    body: JSON.stringify({ title: input.title.trim(), body: input.description.trim() + FOOTER }),
+    body: JSON.stringify({ title: input.title.trim(), body: issueBody(input) }),
   });
   if (!response.ok) throw new GitHubError(`GitHub answered ${response.status}`);
 
   const data = (await response.json()) as { number?: unknown };
   if (typeof data.number !== 'number') throw new GitHubError('GitHub answered without an issue number');
   return { number: data.number };
+}
+
+function issueBody({ description, screenshotUrls }: IssueInput): string {
+  const images = screenshotUrls.map((url, i) => `![Screenshot ${i + 1}](${url})`);
+  return [description.trim(), ...images].filter(Boolean).join('\n\n') + FOOTER;
 }

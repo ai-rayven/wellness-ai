@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, jest } from '@jest/globals';
 
 import { GitHubError, createGitHubIssue } from './github';
 
-const INPUT = { title: ' Chart is empty ', description: ' Steps to see it. ' };
+const INPUT = { title: ' Chart is empty ', description: ' Steps to see it. ', screenshotUrls: [] };
 
 describe('createGitHubIssue', () => {
   afterEach(() => {
@@ -23,6 +23,17 @@ describe('createGitHubIssue', () => {
       title: 'Chart is empty',
       body: 'Steps to see it.\n\n---\nReported from the Sano app.',
     });
+  });
+
+  it('shows the screenshots under the description', async () => {
+    const fetch = jest.spyOn(globalThis, 'fetch').mockResolvedValue(Response.json({ number: 8 }));
+
+    await createGitHubIssue({ ...INPUT, screenshotUrls: ['https://a.test/1.jpg', 'https://a.test/2.jpg'] }, 'token-1');
+
+    expect(JSON.parse(String(fetch.mock.calls[0][1]?.body)).body).toBe(
+      'Steps to see it.\n\n![Screenshot 1](https://a.test/1.jpg)\n\n![Screenshot 2](https://a.test/2.jpg)' +
+        '\n\n---\nReported from the Sano app.',
+    );
   });
 
   it('throws a GitHubError when GitHub answers with an error', async () => {

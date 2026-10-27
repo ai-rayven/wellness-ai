@@ -1,0 +1,18 @@
+rules_version = '2';
+
+// Access table in docs/mvp.md. Anything not matched here is denied.
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Screenshots for issue reports, resized to JPEG by the app. Only the reporter uploads them, once.
+    // The reportIssue function reads them with the Admin SDK, and GitHub shows them by their download URL.
+    match /issues/{uid}/{file} {
+      // `resource == null`: the emulator treats a replace as create, so it is checked here too.
+      allow create: if request.auth != null
+        && request.auth.uid == uid
+        && resource == null
+        && file.matches('[0-9a-f-]{36}[.]jpg')
+        && request.resource.contentType == 'image/jpeg'
+        && request.resource.size < 2 * 1024 * 1024;
+    }
+  }
+}

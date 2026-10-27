@@ -46,6 +46,7 @@ wellness-ai/
 │   │   ├── src/index.ts       searchFoods, reportIssue, checkInvite
 │   │   └── package.json
 │   ├── firestore.rules
+│   ├── storage.rules          issue screenshots
 │   └── firestore.indexes.json
 ├── docs/                      mockups, MVP walkthrough and these docs (GitHub Pages)
 ├── scripts/
@@ -198,6 +199,7 @@ erDiagram
 | `users/{uid}/logEntries/{id}` | Owner only |
 | `users/{uid}/weights/{date}` | Owner only |
 | `config/access` | No client access. The `checkInvite` function reads the invited emails |
+| Storage `issues/{uid}/{uuid}.jpg` | The owner uploads it once (JPEG, under 2 MB). No client reads it. `reportIssue` puts its public download URL in the issue |
 
 - `foods` is shared by all users. A food's `metadata` holds where it came from (e.g. `{ source: "edamam", lookupId: "food_abc123" }`), and the document id is built from those two values, so each food is stored once.
 - One unit each, with no conversion: food in grams, body weight in lb.

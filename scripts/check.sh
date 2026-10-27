@@ -6,4 +6,4 @@ cd "$(dirname "$0")/.."
 
 npm --prefix frontend run check
 npm --prefix backend/functions run check
-firebase emulators:exec --project demo-sano --only auth,firestore,functions "npm --prefix frontend run e2e"
+firebase emulators:exec --project demo-sano --only auth,firestore,functions,storage "npm --prefix frontend run e2e"
