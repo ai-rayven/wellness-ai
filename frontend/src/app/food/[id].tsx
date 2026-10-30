@@ -101,7 +101,9 @@ function EntryForm({ uid, target }: EntryFormProps) {
     setError(null);
     try {
       await action();
-      router.dismissAll();
+      // After logging, return to search so more food can be logged; edits return to the log.
+      if (editing) router.dismissAll();
+      else router.back();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
       setBusy(false);
