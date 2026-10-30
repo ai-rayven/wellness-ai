@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ChevronRight } from 'lucide-react-native';
-import { useEffect, useState } from 'react';
+import { type ComponentRef, useEffect, useRef, useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
@@ -23,20 +23,33 @@ type Results = { status: 'idle' } | { status: 'loading' } | { status: 'done'; fo
 /** The answer for one query. */
 type Answer = { query: string; foods: Food[] } | { query: string; error: string };
 
-/** Search foods by name, or pick a recent one. Params: meal and date to log to. */
+/** Search foods by name, or pick a recent one. Params: meal and date to log to, and the entry just logged. */
 export default function FoodSearch() {
   const session = useSessionWith('ready');
   const router = useRouter();
-  const params = useLocalSearchParams<{ meal?: string; date?: string }>();
+  const params = useLocalSearchParams<{ meal?: string; date?: string; logged?: string }>();
   const [query, setQuery] = useState('');
   const [answer, setAnswer] = useState<Answer | null>(null);
   const [recent, setRecent] = useState<RecentFood[]>([]);
+  const input = useRef<ComponentRef<typeof TextInput>>(null);
   const uid = session?.account.uid;
+  const { logged } = params;
 
+  // Reloads after each log, so the food just logged shows as recent.
   useEffect(() => {
     if (!uid) return;
     recentFoods(uid, RECENT_COUNT).then(setRecent, () => setRecent([]));
-  }, [uid]);
+  }, [uid, logged]);
+
+  // After a food is logged, start over for the next one.
+  const [clearedFor, setClearedFor] = useState(logged);
+  if (logged !== clearedFor) {
+    setClearedFor(logged);
+    setQuery('');
+  }
+  useEffect(() => {
+    if (logged) input.current?.focus();
+  }, [logged]);
 
   const trimmed = query.trim();
   useEffect(() => {
@@ -78,6 +91,7 @@ export default function FoodSearch() {
     <Screen>
       <ScreenHeader title={`Add to ${mealLabel}`} icon="close" onPress={() => router.back()} />
       <TextInput
+        ref={input}
         accessibilityLabel="Search foods"
         autoFocus
         autoCorrect={false}

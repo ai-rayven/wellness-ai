@@ -18,8 +18,9 @@ test('log a food, edit it and delete it', async ({ page }) => {
   await page.getByRole('radio', { name: 'Breakfast' }).click();
   await page.getByRole('button', { name: 'Log to Today' }).click();
 
-  // Logging returns to search, to log more food.
-  await expect(page.getByLabel('Search foods')).toHaveValue('rolled oats');
+  // Logging returns to an empty, focused search, to log more food.
+  await expect(page.getByLabel('Search foods')).toHaveValue('');
+  await expect(page.getByLabel('Search foods')).toBeFocused();
   await page.getByRole('button', { name: 'Close' }).click();
 
   await page.getByRole('tab', { name: 'Food Log' }).click();
