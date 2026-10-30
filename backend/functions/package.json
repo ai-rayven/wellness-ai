@@ -8,7 +8,7 @@
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch --preserveWatchOutput",
-    "test": "firebase emulators:exec --project demo-sano --only auth,firestore,functions,storage \"jest --runInBand\"",
+    "test": "npx firebase emulators:exec --project demo-sano --only auth,firestore,functions,storage \"jest --runInBand\"",
     "check": "npm run build && eslint . && npm test"
   },
   "dependencies": {

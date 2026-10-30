@@ -6,12 +6,13 @@ See [docs/mvp.md](docs/mvp.md) for scope, decisions and the data model.
 ## Requirements
 
 - Node 22 or later
-- Firebase CLI (`npm install -g firebase-tools`)
+- Firebase CLI: pinned in the root `package.json`, installed by `npm ci` at the repo root
 - Java 11 or later (for the Firestore emulator)
 
 ## Setup
 
 ```sh
+npm ci                                              # Firebase CLI
 npm --prefix frontend install
 npm --prefix backend/functions install
 npx --prefix frontend playwright install chromium   # for the E2E tests

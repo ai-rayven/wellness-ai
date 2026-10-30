@@ -100,12 +100,11 @@ function EntryForm({ uid, target }: EntryFormProps) {
   const nutrients = validAmount ? nutrientsForGrams(food.nutrientsPer100g, amount) : null;
   const per100g = food.nutrientsPer100g;
 
-  async function run(action: () => Promise<unknown>) {
+  async function run(action: () => Promise<void>) {
     setBusy(true);
     setError(null);
     try {
       await action();
-      router.dismissAll();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
       setBusy(false);
@@ -113,11 +112,16 @@ function EntryForm({ uid, target }: EntryFormProps) {
   }
 
   const save = () =>
-    run(() =>
-      editing
-        ? updateEntry(uid, target.entry, { meal, grams: amount })
-        : addEntry(uid, target.food, { meal, grams: amount }, target.date, toIsoDate(new Date())),
-    );
+    run(async () => {
+      if (editing) {
+        await updateEntry(uid, target.entry, { meal, grams: amount });
+        router.dismissAll();
+        return;
+      }
+      const logged = await addEntry(uid, target.food, { meal, grams: amount }, target.date, toIsoDate(new Date()));
+      // Back to search, which clears itself for the next food.
+      router.dismissTo({ pathname: '/food/search', params: { meal: target.meal, date: target.date, logged } });
+    });
 
   return (
     <Screen>
@@ -129,8 +133,8 @@ function EntryForm({ uid, target }: EntryFormProps) {
       <View>
         <Text className="text-[22px] font-extrabold text-ink">{food.name}</Text>
         <Text className="text-xs text-text-2">
-          {food.brand ? `${food.brand} · ` : ''}per 100 g: {per100g.kcal} kcal · P {per100g.proteinG} · C{' '}
-          {per100g.carbsG} · F {per100g.fatG}
+          {food.brand ? `${food.brand} · ` : ''}per 100 g: {Math.round(per100g.kcal)} kcal · P {Math.round(per100g.proteinG)} · C{' '}
+          {Math.round(per100g.carbsG)} · F {Math.round(per100g.fatG)}
         </Text>
       </View>
 
@@ -169,7 +173,12 @@ function EntryForm({ uid, target }: EntryFormProps) {
           label="Delete entry"
           variant="ghost"
           disabled={busy}
-          onPress={() => run(() => removeEntry(uid, target.entry.id))}
+          onPress={() =>
+            run(async () => {
+              await removeEntry(uid, target.entry.id);
+              router.dismissAll();
+            })
+          }
         />
       )}
       {error && <Text className="text-center text-sm text-carbs">{error}</Text>}

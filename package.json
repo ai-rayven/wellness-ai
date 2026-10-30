@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "description": "Pins the Firebase CLI for the scripts and CI.",
+  "devDependencies": {
+    "firebase-tools": "15.2.1"
+  }
+}

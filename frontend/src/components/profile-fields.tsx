@@ -1,4 +1,4 @@
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 
 import { ageOn, isIsoDate } from '@/lib/dates';
 import { NUTRIENTS } from '@/lib/nutrients';
@@ -67,14 +67,13 @@ export function ProfileFields({ draft, today, onChange }: ProfileFieldsProps) {
         <Segmented options={SEXES} value={draft.sex} onChange={(sex) => onChange({ ...draft, sex })} />
       </Field>
 
-      <Field label="Birth date">
+      <Field label="Birth date" hint={age !== null ? `Age ${age}` : undefined}>
         <DateField
           label="Birth date"
           value={birthDate}
           max={today}
           onChange={(value) => onChange({ ...draft, birthDate: value })}
         />
-        {age !== null && <Text className="text-sm text-text-2">Age {age}</Text>}
       </Field>
 
       <Field label="Daily targets">

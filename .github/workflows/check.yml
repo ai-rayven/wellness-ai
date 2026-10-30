@@ -26,6 +26,7 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: |
+            package-lock.json
             frontend/package-lock.json
             backend/functions/package-lock.json
 
@@ -42,7 +43,7 @@ jobs:
 
       - name: Install
         run: |
-          npm install -g firebase-tools@15.2.1
+          npm ci --ignore-scripts
           npm ci --prefix frontend
           npm ci --prefix backend/functions
           cd frontend && npx playwright install --with-deps chromium
