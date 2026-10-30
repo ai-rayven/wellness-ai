@@ -23,6 +23,9 @@ test('screenshots of the main screens', async ({ page }) => {
   await page.getByLabel('Search foods').fill('banana');
   await page.getByRole('button', { name: /^Banana\s+89 kcal/ }).click();
   await page.getByRole('button', { name: 'Log to Today' }).click();
+  // Logging returns to the search, so close it to see the Dashboard.
+  await expect(page.getByLabel('Search foods')).toHaveValue('');
+  await page.getByRole('button', { name: 'Close' }).click();
   await expect(page.getByLabel('Calories: 89 of 2200')).toBeVisible();
   await shoot(page, '1-dashboard');
 
