@@ -141,7 +141,7 @@ function FoodList({ title, items, onPick }: FoodListProps) {
               <Text className="text-base font-semibold text-ink">{food.name}</Text>
               <Text className="text-xs text-text-2">
                 {food.brand ? `${food.brand} · ` : ''}
-                {food.nutrientsPer100g.kcal} kcal per 100 g
+                {Math.round(food.nutrientsPer100g.kcal)} kcal per 100 g
               </Text>
             </View>
             <ChevronRight color={colors.text} size={18} />

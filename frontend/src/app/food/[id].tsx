@@ -125,8 +125,8 @@ function EntryForm({ uid, target }: EntryFormProps) {
       <View>
         <Text className="text-[22px] font-extrabold text-ink">{food.name}</Text>
         <Text className="text-xs text-text-2">
-          {food.brand ? `${food.brand} · ` : ''}per 100 g: {per100g.kcal} kcal · P {per100g.proteinG} · C{' '}
-          {per100g.carbsG} · F {per100g.fatG}
+          {food.brand ? `${food.brand} · ` : ''}per 100 g: {Math.round(per100g.kcal)} kcal · P {Math.round(per100g.proteinG)} · C{' '}
+          {Math.round(per100g.carbsG)} · F {Math.round(per100g.fatG)}
         </Text>
       </View>
 
