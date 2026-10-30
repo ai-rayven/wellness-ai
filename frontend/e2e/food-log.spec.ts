@@ -38,7 +38,10 @@ test('log a food, edit it and delete it', async ({ page }) => {
   // The logged food is now a recent food.
   await page.getByRole('button', { name: 'Add food to Lunch' }).click();
   await expect(page.getByText('Recent')).toBeVisible();
-  await expect(page.getByRole('button', { name: /^Rolled oats/ })).toBeVisible();
+  await page.getByRole('button', { name: /^Rolled oats/ }).click();
+  // The amount defaults to the latest logged grams.
+  await expect(page.getByLabel('Amount')).toHaveValue('100');
+  await page.getByRole('button', { name: 'Back' }).click();
   await page.getByRole('button', { name: 'Close' }).click();
 
   await page.getByRole('button', { name: /Rolled oats\s+100 g/ }).click();

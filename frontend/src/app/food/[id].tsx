@@ -17,33 +17,36 @@ import { getFood } from '@/services/food';
 import { addEntry, getEntry, removeEntry, updateEntry } from '@/services/log';
 import { useSessionWith } from '@/services/session';
 
-type Params = { id: string; entry?: string; meal?: string; date?: string };
+/** `grams`, from a recent food, is the default amount; otherwise 100 g. */
+type Params = { id: string; entry?: string; meal?: string; date?: string; grams?: string };
+
+const DEFAULT_GRAMS = 100;
 
 /** What the screen works on: a food to log to a day, or an existing entry to edit. */
 type Target =
   | { status: 'loading' }
   | { status: 'error'; message: string }
-  | { status: 'new'; food: Food; date: IsoDate; meal: MealType }
+  | { status: 'new'; food: Food; date: IsoDate; meal: MealType; grams: number }
   | { status: 'edit'; entry: LogEntry };
 
 /** Amount and meal for a food, then log it, or edit and delete an entry. */
 export default function FoodDetail() {
   const session = useSessionWith('ready');
-  const { id, entry, meal, date } = useLocalSearchParams<Params>();
+  const { id, entry, meal, date, grams } = useLocalSearchParams<Params>();
   const [target, setTarget] = useState<Target>({ status: 'loading' });
   const uid = session?.account.uid;
 
   useEffect(() => {
     if (!uid) return;
     let current = true;
-    loadTarget(uid, { id, entry, meal, date }, toIsoDate(new Date())).then(
+    loadTarget(uid, { id, entry, meal, date, grams }, toIsoDate(new Date())).then(
       (t) => current && setTarget(t),
       (e: Error) => current && setTarget({ status: 'error', message: e.message }),
     );
     return () => {
       current = false;
     };
-  }, [uid, id, entry, meal, date]);
+  }, [uid, id, entry, meal, date, grams]);
 
   if (!session) return null;
   if (target.status === 'loading') return <Message title="Add food" text="Loading…" />;
@@ -64,7 +67,8 @@ async function loadTarget(uid: string, params: Params, today: IsoDate): Promise<
   }
   const food = await getFood(params.id);
   if (!food) return { status: 'error', message: 'This food was not found.' };
-  return { status: 'new', food, date, meal };
+  const lastGrams = Number(params.grams);
+  return { status: 'new', food, date, meal, grams: lastGrams > 0 ? lastGrams : DEFAULT_GRAMS };
 }
 
 function Message({ title, text }: { title: string; text: string }) {
@@ -86,7 +90,7 @@ function EntryForm({ uid, target }: EntryFormProps) {
   const router = useRouter();
   const editing = target.status === 'edit';
   const food: FoodSnapshot = editing ? target.entry.food : target.food;
-  const [grams, setGrams] = useState(editing ? String(target.entry.grams) : '100');
+  const [grams, setGrams] = useState(String(editing ? target.entry.grams : target.grams));
   const [meal, setMeal] = useState<MealType>(editing ? target.entry.meal : target.meal);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);

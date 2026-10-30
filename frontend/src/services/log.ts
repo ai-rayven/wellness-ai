@@ -28,10 +28,11 @@ const RECENT_SCAN = 50;
 
 const entries = (uid: string) => collection(db, 'users', uid, 'logEntries');
 
-/** A food from the user's latest entries, as it was logged. */
+/** A food from the user's latest entries, as it was logged, with the grams of its latest entry. */
 export interface RecentFood {
   foodId: string;
   food: FoodSnapshot;
+  grams: number;
 }
 
 export interface EntryInput {
@@ -144,7 +145,7 @@ export async function recentFoods(uid: string, count: number): Promise<RecentFoo
   const recent = new Map<string, RecentFood>();
   for (const entry of snapshot.docs.map(toEntry)) {
     if (!entry || recent.has(entry.foodId)) continue;
-    recent.set(entry.foodId, { foodId: entry.foodId, food: entry.food });
+    recent.set(entry.foodId, { foodId: entry.foodId, food: entry.food, grams: entry.grams });
     if (recent.size === count) break;
   }
   return [...recent.values()];
