@@ -64,3 +64,39 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: scripts/post-screens.sh ${{ github.event.pull_request.number }} ${{ github.event.pull_request.head.sha }}
+
+  # Deploys main to the dev project once the gate passes.
+  deploy:
+    needs: check
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    concurrency: deploy # Never two deploys at once.
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            frontend/package-lock.json
+            backend/functions/package-lock.json
+
+      - name: Install
+        run: |
+          npm ci --ignore-scripts
+          npm ci --prefix frontend
+          npm ci --prefix backend/functions
+
+      - uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+      # Same steps as scripts/deploy.sh, without the gate the check job already ran.
+      - name: Build web app
+        run: cd frontend && npx expo export -p web
+
+      - name: Deploy
+        run: npx firebase deploy --project dev --non-interactive

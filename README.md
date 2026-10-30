@@ -31,6 +31,7 @@ Expo web runs on http://localhost:8081 and the Emulator UI on http://localhost:4
 ## CI
 
 GitHub Actions runs `scripts/check.sh` on every PR and on `main` (`.github/workflows/check.yml`).
+On `main`, once the gate passes, it deploys to the `dev` project with the service account key in the `FIREBASE_SERVICE_ACCOUNT` secret.
 On a PR, it also posts phone screenshots of the main screens (`frontend/e2e/screens.spec.ts`) in one comment.
 The images are on the `ci-screens` branch, because GitHub has no API to attach images to a comment.
 
