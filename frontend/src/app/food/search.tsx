@@ -85,7 +85,8 @@ export default function FoodSearch() {
   }
 
   const mealLabel = MEALS.find((m) => m.value === meal)?.label;
-  const pick = (foodId: string) => router.push({ pathname: '/food/[id]', params: { id: foodId, meal, date } });
+  const pick = (foodId: string, grams?: number) =>
+    router.push({ pathname: '/food/[id]', params: { id: foodId, meal, date, ...(grams && { grams: String(grams) }) } });
 
   return (
     <Screen>
@@ -111,13 +112,13 @@ interface ResultListProps {
   results: Results;
   query: string;
   recent: RecentFood[];
-  onPick: (foodId: string) => void;
+  onPick: (foodId: string, grams?: number) => void;
 }
 
 function ResultList({ results, query, recent, onPick }: ResultListProps) {
   if (results.status === 'idle') {
     if (recent.length === 0) return <Text className="text-base text-text-2">Search for a food by name.</Text>;
-    return <FoodList title="Recent" items={recent.map((r) => ({ id: r.foodId, food: r.food }))} onPick={onPick} />;
+    return <FoodList title="Recent" items={recent.map((r) => ({ id: r.foodId, food: r.food, grams: r.grams }))} onPick={onPick} />;
   }
   if (results.status === 'loading') return <Text className="text-base text-text-2">Searching…</Text>;
   if (results.status === 'error') {
@@ -135,8 +136,8 @@ function ResultList({ results, query, recent, onPick }: ResultListProps) {
 
 interface FoodListProps {
   title: string;
-  items: { id: string; food: FoodSnapshot }[];
-  onPick: (foodId: string) => void;
+  items: { id: string; food: FoodSnapshot; grams?: number }[];
+  onPick: (foodId: string, grams?: number) => void;
 }
 
 function FoodList({ title, items, onPick }: FoodListProps) {
@@ -144,11 +145,11 @@ function FoodList({ title, items, onPick }: FoodListProps) {
     <View className="gap-2">
       <Text className="text-xs font-bold uppercase tracking-wider text-text-2">{title}</Text>
       <View className="rounded-[18px] bg-card px-4">
-        {items.map(({ id, food }, i) => (
+        {items.map(({ id, food, grams }, i) => (
           <Pressable
             key={id}
             accessibilityRole="button"
-            onPress={() => onPick(id)}
+            onPress={() => onPick(id, grams)}
             className={`flex-row items-center py-3 ${i > 0 ? 'border-t border-grid' : ''}`}
           >
             <View className="flex-1 pr-3">
