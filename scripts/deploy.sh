@@ -9,4 +9,4 @@ PROJECT="${1:-dev}"
 scripts/check.sh
 # Without EXPO_PUBLIC_FIREBASE_EMULATORS, the build uses the real project config.
 (cd frontend && env -u EXPO_PUBLIC_FIREBASE_EMULATORS npx expo export -p web)
-firebase deploy --project "$PROJECT"
+npx firebase deploy --project "$PROJECT"
